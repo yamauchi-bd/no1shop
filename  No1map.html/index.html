@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>No.1 map</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        h1 {
+            padding: 0;
+            margin: 0;
+            font-size: 50%;
+        }
+    </style>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <script src="https://kit.fontawesome.com/17c882a708.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+
+<body>
+
+    <!-- MAP[START] -->
+    <h1>みんなのNo.1飲食店を紹介</h1>
+    <div id="myMap" style='width:80%;height:80%;float:left;'></div>
+    <!-- MAP[END] -->
+
+    <header>
+        <div class="map-search">
+            <input type="text" id="searchArea" placeholder="エリアを検索">
+        </div>
+
+        <div class="filter">
+            <select name="genre" id="genreSelect">
+                <option value="ジャンル">ジャンル</option>
+                <option value="ジャンル">ジャンル</option>
+                <option value="ジャンル">ジャンル</option>
+            </select>
+
+            <select name="scene" id="sceneSelect">
+                <option value="シーン">シーン</option>
+                <option value="シーン">シーン</option>
+                <option value="シーン">シーン</option>
+            </select>
+
+            <select name="budget" id="budgetSelect">
+                <option value="予算">予算</option>
+                <option value="予算">予算</option>
+                <option value="予算">予算</option>
+            </select>
+        </div>
+    </header>
+
+
+    <!-- APIから店舗情報を取得したい -->
+    <div id="postForm" style="display:none;">
+        <input type="text" id="storeName" placeholder="店名">
+        <input type="text" id="genre" placeholder="ジャンル">
+        <input type="number" id="budget" placeholder="予算">
+        <input type="text" id="url" placeholder="URL">
+        <input type="text" id="latitude" placeholder="緯度">
+        <input type="text" id="longitude" placeholder="経度">
+        <textarea id="postContent" placeholder="投稿内容を入力"></textarea>
+        <button onclick="submitPost()">投稿</button>
+    </div>
+
+    <div id="loginForm" style="display:none;">
+        <button onclick="signInWithGoogle()">Googleでログイン</button>
+    </div>
+
+    <footer>
+        <div class="menu">
+            <div id="profile">
+                <div class="profile-icon">
+                    <i class="far fa-user-circle"></i>
+                </div>
+                <div class="profile-name">
+                    <p>プロフィール</p>
+                </div>
+            </div>
+            <div id="post" style="background-color: aqua;">
+                <div class="post-icon">
+                    <i class="far fa-plus-square"></i>
+                </div>
+                <div class="post-text">
+                    <p>投稿</p>
+                </div>
+            </div>
+            <div id="find">
+                <div class="find-icon">
+                    <i class="far fa-heart"></i>
+                </div>
+                <div class="find-text">
+                    <p>発見</p>
+                </div>
+            </div>
+        </div>
+
+    </footer>
+
+    <script
+        src='https://www.bing.com/api/maps/mapcontrol?callback=GetMap&key=AuOhocx9-zu5OJ5u9HhQMzT0SqyH6g8mkFWl0sKb3xAvgxKu2JclVhGz7THb2qz3'
+        async defer></script>
+    <script src="../js/BmapQuery.js"></script>
+
+    <!-- //****************************************************************************************
+// Firebase
+//**************************************************************************************** -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getDatabase, ref, set, push, onChildAdded, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMz-NgvsySJRbf-yBFramedZeykiBY1jU",
+            authDomain: "no1map.firebaseapp.com",
+            projectId: "no1map",
+            storageBucket: "no1map.appspot.com",
+            messagingSenderId: "158515178223",
+            appId: "1:158515178223:web:18f6d16f88becac68a491a"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        const storage = getStorage(app);
+        const dbRef = ref(db, 'no1map');
+
+        const provider = new GoogleAuthProvider();
+
+        window.auth = auth;
+        window.GoogleAuthProvider = GoogleAuthProvider;
+
+        window.signInWithGoogle = async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                console.log("Googleアカウントでログイン成功:", result.user);
+            } catch (error) {
+                console.error("Googleログインエラー:", error.message);
+            }
+        };
+
+        window.submitPost = () => {
+            const storeName = document.getElementById('storeName').value;
+            const genre = document.getElementById('genre').value;
+            const budget = document.getElementById('budget').value;
+            const url = document.getElementById('url').value;
+            const latitude = document.getElementById('latitude').value;
+            const longitude = document.getElementById('longitude').value;
+            const postContent = document.getElementById('postContent').value;
+            const postsRef = ref(db, 'posts');
+            const newPostRef = push(postsRef);
+            set(newPostRef, {
+                content: postContent,
+                storeName: storeName,
+                genre: genre,
+                budget: budget,
+                url: url,
+                latitude: latitude,
+                longitude: longitude,
+                timestamp: Date.now(),
+                userId: auth.currentUser.uid
+            }).then(() => {
+                console.log('投稿が成功しました。');
+                document.getElementById('postContent').value = ''; // Clear the textarea
+            }).catch((error) => {
+                console.error('投稿エラー:', error);
+            });
+        };
+    </script>
+
+    <!-- //****************************************************************************************
+// BingMaps&BmapQuery
+//**************************************************************************************** -->
+    <script>
+        //Init
+        function GetMap() {
+            //------------------------------------------------------------------------
+            //1. Instance
+            //------------------------------------------------------------------------
+            const map = new Bmap("#myMap");
+
+            //------------------------------------------------------------------------
+            //2. geolocation: Display Map
+            //   map.geolocation(function(data:object){...});
+            //------------------------------------------------------------------------
+            map.geolocation(function (data) {
+                //location
+                const lat = data.coords.latitude;
+                const lon = data.coords.longitude;
+                //Map
+                map.startMap(lat, lon, "load", 15);
+                //pin
+                map.pin(lat, lon, "#ff0000");
+
+
+                //----------------------------------------------------
+                //3. Infobox
+                //   options = new Array();
+                //   options[index] = { lat, lon, width, height, title, pinColor, description };
+                //----------------------------------------------------
+                const options = [];
+                options[0] = {
+                    "lat": 34.889294,
+                    "lon": 135.807693,
+                    "title": "KYOTO",
+                    "pinColor": "#ff0000",
+                    "height": 300,
+                    "width": 320,
+                    "description": 'Byoudouin<br><img src="" width="300">',
+                    "show": false
+                };
+
+                //----------------------------------------------------
+                //4. Switch infoboxs
+                //   infoboxLayers(options, true); //true=one, false=Multiple
+                //----------------------------------------------------
+                map.infoboxLayers(options, true);
+            });
+
+            // Firebaseからデータを取得
+            const postsRef = ref(db, 'posts');
+            onValue(postsRef, (snapshot) => {
+                const data = snapshot.val();
+                const options = [];
+                let index = 0;
+
+                for (const key in data) {
+                    const post = data[key];
+                    options[index] = {
+                        "lat": post.latitude,
+                        "lon": post.longitude,
+                        "title": post.storeName,
+                        "pinColor": "#ff0000",
+                        "height": 300,
+                        "width": 320,
+                        "description": `${post.genre}<br><img src="${post.url}" width="300">`,
+                        "show": true
+                    };
+                    index++;
+                }
+
+                // マップ上にピンとインフォボックスを表示
+                map.infoboxLayers(options, true);
+            });
+        }
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            // 投稿フォームとログインフォームの初期状態を非表示に設定
+            $("#postForm").hide();
+            $("#loginForm").hide();
+
+            $("#post").on("click", function () {
+                if (window.auth.currentUser) {
+                    // ログイン済みの場合
+                    // 投稿フォームを表示する
+                    $("#postForm").show();
+                    $("#loginForm").hide();
+                } else {
+                    // ログインしていない場合
+                    // ログインフォームを表示する
+                    $("#loginForm").show();
+                    $("#postForm").hide();
+                }
+            });
+        });
+    </script>
+
+
+</body>
+
+</html>
+
