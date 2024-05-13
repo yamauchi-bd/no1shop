@@ -41,7 +41,7 @@
         <div class="filter">
             <select name="genre" id="genreSelect">
                 <option value="ジャンル">ジャンル</option>
-                <option value="ジャンル">ジャンル</option>
+                <option value="ジャン���">ジャンル</option>
                 <option value="ジャンル">ジャンル</option>
             </select>
 
@@ -109,7 +109,7 @@
     <script
         src='https://www.bing.com/api/maps/mapcontrol?callback=GetMap&key=AuOhocx9-zu5OJ5u9HhQMzT0SqyH6g8mkFWl0sKb3xAvgxKu2JclVhGz7THb2qz3'
         async defer></script>
-    <script src="../js/BmapQuery.js"></script>
+    <script src="../src/BmapQuery.js"></script>
 
     <!-- //****************************************************************************************
 // Firebase
@@ -117,9 +117,8 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onChildAdded, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
-        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -135,14 +134,14 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        const storage = getStorage(app);
-        const dbRef = ref(db, 'no1map');
-
         const provider = new GoogleAuthProvider();
 
+        window.db = db;
+        window.ref = ref;
+        window.push = push;
+        window.set = set;
         window.auth = auth;
-        window.GoogleAuthProvider = GoogleAuthProvider;
-
+        window.onValue = onValue;
         window.signInWithGoogle = async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
@@ -211,49 +210,44 @@
                 //   options = new Array();
                 //   options[index] = { lat, lon, width, height, title, pinColor, description };
                 //----------------------------------------------------
-                const options = [];
-                options[0] = {
-                    "lat": 34.889294,
-                    "lon": 135.807693,
-                    "title": "KYOTO",
-                    "pinColor": "#ff0000",
-                    "height": 300,
-                    "width": 320,
-                    "description": 'Byoudouin<br><img src="" width="300">',
-                    "show": false
-                };
+                // const options = [];
+                // options[0]={
+                //     "lat":34.889294,
+                //     "lon":135.807693,
+                //     "title":"KYOTO",
+                //     "pinColor":"#ff0000",
+                //     "height":300,
+                //     "width":320,
+                //     "description": 'Byoudouin<br><img src="../img/byoudouin.jpg" width="300">',
+                //     "show":false
+                // };
 
-                //----------------------------------------------------
-                //4. Switch infoboxs
-                //   infoboxLayers(options, true); //true=one, false=Multiple
-                //----------------------------------------------------
-                map.infoboxLayers(options, true);
-            });
 
-            // Firebaseからデータを取得
-            const postsRef = ref(db, 'posts');
-            onValue(postsRef, (snapshot) => {
-                const data = snapshot.val();
-                const options = [];
-                let index = 0;
+                // Firebaseからデータを取得
+                const postsRef = ref(db, 'posts');
+                onValue(postsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    const options = [];
+                    let index = 0;
 
-                for (const key in data) {
-                    const post = data[key];
-                    options[index] = {
-                        "lat": post.latitude,
-                        "lon": post.longitude,
-                        "title": post.storeName,
-                        "pinColor": "#ff0000",
-                        "height": 300,
-                        "width": 320,
-                        "description": `${post.genre}<br><img src="${post.url}" width="300">`,
-                        "show": true
-                    };
-                    index++;
-                }
+                    for (const key in data) {
+                        const post = data[key];
+                        options[index] = {
+                            "lat": post.latitude,
+                            "lon": post.longitude,
+                            "title": post.storeName,
+                            "pinColor": "#ff0000",
+                            "height": 300,
+                            "width": 320,
+                            "description": `${post.genre}<br><img src="${post.url}" width="300">`,
+                            "show": true
+                        };
+                        index++;
+                    }
 
-                // マップ上にピンとインフォボックスを表示
-                map.infoboxLayers(options, true);
+                    // マップ上にピンとインフォボックスを表示
+                    map.infoboxLayers(options, true);
+                });
             });
         }
     </script>
@@ -284,4 +278,5 @@
 </body>
 
 </html>
-
+</html>
+</html>
