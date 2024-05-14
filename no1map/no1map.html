@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="map.css">
+    <script src="https://kit.fontawesome.com/17c882a708.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAN01vt35jhrqmaeNxcINCUb85gE_lRbm4&libraries=places&callback=initMap"></script>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="searchArea">
+        <input type="text" id="searchAreaBar" placeholder="地図を移動">
+        <button id="searchAreaButton"><i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
+
+    <div id="mapFilter">
+        <select name="" id="genre">
+            <option value="ジャンル">ジャンル</option>
+            <option value="ジャンル">ジャンル</option>
+            <option value="ジャンル">ジャンル</option>
+        </select>
+        <select name="" id="scene">
+            <option value="シーン">シーン</option>
+            <option value="シーン">シーン</option>
+            <option value="シーン">シーン</option>
+        </select>
+        <select name="" id="budget">
+            <option value="予算">予算</option>
+            <option value="予算">予算</option>
+            <option value="予算">予算</option>
+        </select>
+    </div>
+
+    <div class="footer">
+        <button id="myPage">
+            <i class="far fa-user-circle fa-2x"></i>
+            マイページ
+        </button>
+        <button id="post">
+            <i class="far fa-plus-square fa-2x"></i>
+            投稿
+        </button>
+        <button id="find">
+            <i class="fa-brands fa-instagram fa-2x"></i>
+            発見
+        </button>
+    </div>
+
+    <script>
+    function initMap() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                var map = new google.maps.Map(document.getElementById('map'), {
+                    center: pos,
+                    zoom: 15  // ズームレベルを調整して詳細な地図を表示
+                });
+
+                var marker = new google.maps.Marker({
+                    position: pos,
+                    map: map,
+                    title: '現在地'
+                });
+
+                initAutocomplete(map);  // Autocompleteを初期化する際にマップオブジェクトを渡す
+            }, function() {
+                handleLocationError(true, map, map.getCenter());
+            });
+        } else {
+            // ブラウザがGeolocationをサポートしていない場合
+            handleLocationError(false, map, map.getCenter());
+        }
+    }
+
+    function handleLocationError(browserHasGeolocation, map, pos) {
+        var content = browserHasGeolocation ?
+                      'エラー: Geolocation サービスが失敗しました。' :
+                      'エラー: お使いのブラウザは Geolocation をサポートしていません。';
+        var infoWindow = new google.maps.InfoWindow({map: map, position: pos, content: content});
+        infoWindow.open(map);
+    }
+
+    function initAutocomplete(map) {
+        var autocomplete = new google.maps.places.Autocomplete(
+            document.getElementById('searchAreaBar'), {types: ['geocode']}
+        );
+        autocomplete.addListener('place_changed', function() {
+            var place = autocomplete.getPlace();
+            if (!place.geometry) {
+                window.alert("詳細が見つかりませんでした: '" + place.name + "'");
+                return;
+            }
+            map.setCenter(place.geometry.location);
+        });
+    }
+
+    function onPlaceChanged() {
+        var place = autocomplete.getPlace();
+        if (!place.geometry) {
+            // User entered the name of a Place that was not suggested and
+            // pressed the Enter key, or the Place Details request failed.
+            window.alert("詳細が見つかりませんでした: '" + place.name + "'");
+            return;
+        }
+
+        // Display details about the valid place.
+        document.getElementById('latitude').value = place.geometry.location.lat();
+        document.getElementById('longitude').value = place.geometry.location.lng();
+        document.getElementById('genre').value = place.types.join(', ');
+        document.getElementById('budget').value = place.price_level;
+        document.getElementById('url').value = place.url;
+
+        // Create an infobox and display it on the map
+        var infowindow = new google.maps.InfoWindow({
+            content: createContentForInfobox(place)
+        });
+
+        var marker = new google.maps.Marker({
+            position: place.geometry.location,
+            map: map,
+            title: place.name
+        });
+
+        marker.addListener('click', function() {
+            infowindow.open(map, marker);
+        });
+    }
+
+    function createContentForInfobox(place) {
+        return '<div><strong>' + place.name + '</strong><br>' +
+               'ジャンル: ' + place.types.join(', ') + '<br>' +
+               '予算: ' + place.price_level + '<br>' +
+               'URL: <a href="' + place.url + '">' + place.url + '</a></div>';
+    }
+    </script>
+</body>
+</html>
+
+
