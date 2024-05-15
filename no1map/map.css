@@ -7,7 +7,7 @@
 /* 検索バーのスタイル */
 #searchArea {
     position: absolute;
-    top: 10px;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
     width: 80%;
@@ -38,10 +38,9 @@
     font-size: 16px;
 }
 
-/* フィルターボタンのスタイル */
 #mapFilter {
     position: absolute;
-    top: 60px;
+    top: 70px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -54,15 +53,11 @@
     border: 1px solid #ccc;
     width: 150px;
     border-radius: 25px;
-    margin: 25px 15px;
+    margin: 25px 10px;
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
-#mapFilter selecet:hover {
-    background: #f0f0f0;
 }
 
 /* フッターのスタイル */
@@ -89,4 +84,87 @@
 
 .footer button i {
     margin-bottom: 5px;
+}
+
+#postFormContainer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 10;
+}
+
+#postForm {
+    position: absolute;
+    top: 50%; /* 画面の中央に配置 */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 350px;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#postForm input, #postForm textarea, #postForm select {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+select option[value=""] {
+    color: lightgray;
+}
+
+#postForm #storeNamePost {
+    margin-top: 5px;
+}
+
+#postForm #closePostForm {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: gray;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+#postForm #closePostForm:hover {
+    background: #d2d0cf;
+}
+
+#postForm #submitPost {
+    background: orange;
+    border: none;
+    width: 50%;
+    border-radius: 20px;
+    padding: 10px 20px;
+    margin: 10px auto;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s;
+}
+
+#postForm #submitPost:hover {
+    background: #f7893f;
 }

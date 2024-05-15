@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>No,1 MAP</title>
     <link rel="stylesheet" href="map.css">
     <script src="https://kit.fontawesome.com/17c882a708.js" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAN01vt35jhrqmaeNxcINCUb85gE_lRbm4&libraries=places&callback=initMap"></script>
 </head>
 
 <body>
@@ -18,20 +18,23 @@
     </div>
 
     <div id="mapFilter">
-        <select name="" id="genre">
-            <option value="ジャンル">ジャンル</option>
-            <option value="ジャンル">ジャンル</option>
-            <option value="ジャンル">ジャンル</option>
+        <select name="" id="genreFilter">
+            <option value="">ジャンル</option>
+            <option value="フレンチ">フレンチ</option>
+            <option value="イタリアン">イタリアン</option>
+            <option value="日料理">日本料理</option>
         </select>
-        <select name="" id="scene">
-            <option value="シーン">シーン</option>
-            <option value="シーン">シーン</option>
-            <option value="シーン">シーン</option>
+        <select name="" id="sceneFilter">
+            <option value="">利用シーン</option>
+            <option value="デート">デート</option>
+            <option value="会食">会食</option>
+            <option value="日常">日常</option>
         </select>
-        <select name="" id="budget">
-            <option value="予算">予算</option>
-            <option value="予算">予算</option>
-            <option value="予算">予算</option>
+        <select name="" id="budgetFilter">
+            <option value="">予算</option>
+            <option value="〜5000円">〜5000円</option>
+            <option value="5000円〜10000円">5000円〜10000円</option>
+            <option value="10000円〜">10000円〜</option>
         </select>
     </div>
 
@@ -50,98 +53,266 @@
         </button>
     </div>
 
-    <script>
-    function initMap() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                var pos = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
+    <!-- 投稿画面 -->
+    <div id="postFormContainer" style="display: none;">
+        <div id="postForm">
+            <input type="text" id="storeNamePost" placeholder="店舗名">
+            <input type="text" id="addressPost" placeholder="住所">
+            <input type="text" id="urlPost" placeholder="URL">
+            <select name="" id="genrePost">
+                <option value="" selected>ジャンル</option>
+                <option value="フレンチ">フレンチ</option>
+                <option value="イタリアン">イタリアン</option>
+                <option value="日料理">日本料理</option>
+            </select>
+            <select name="" id="scenePost">
+                <option value="" selected>利用シーン</option>
+                <option value="デート">デート</option>
+                <option value="会食">会食</option>
+                <option value="日常">日常</option>
+            </select>
+            <select name="" id="budgetPost">
+                <option value="" selected>予算</option>
+                <option value="〜5000円">〜5000円</option>
+                <option value="5000円〜10000円">5000円〜10000円</option>
+                <option value="10000円〜">10000円〜</option>
+            </select>
+            <textarea id="impressionPost" placeholder="感想コメント"></textarea>
+            <button id="submitPost">投稿</button>
+            <button id="closePostForm"><i class="fa-solid fa-xmark"></i></button>
+        </div>
 
-                var map = new google.maps.Map(document.getElementById('map'), {
-                    center: pos,
-                    zoom: 15  // ズームレベルを調整して詳細な地図を表示
-                });
+        <!-- //****************************************************************************************
+// Firebase
+//**************************************************************************************** -->
+        <script type="module">
+            // Import the functions you need from the SDKs you need
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+            import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+            import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
-                var marker = new google.maps.Marker({
-                    position: pos,
-                    map: map,
-                    title: '現在地'
-                });
+            // Your web app's Firebase configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyCMz-NgvsySJRbf-yBFramedZeykiBY1jU",
+                authDomain: "no1map.firebaseapp.com",
+                projectId: "no1map",
+                storageBucket: "no1map.appspot.com",
+                messagingSenderId: "158515178223",
+                appId: "1:158515178223:web:18f6d16f88becac68a491a"
+            };
 
-                initAutocomplete(map);  // Autocompleteを初期化する際にマップオブジェクトを渡す
-            }, function() {
-                handleLocationError(true, map, map.getCenter());
-            });
-        } else {
-            // ブラウザがGeolocationをサポートしていない場合
-            handleLocationError(false, map, map.getCenter());
-        }
-    }
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+            const auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
 
-    function handleLocationError(browserHasGeolocation, map, pos) {
-        var content = browserHasGeolocation ?
-                      'エラー: Geolocation サービスが失敗しました。' :
-                      'エラー: お使いのブラウザは Geolocation をサポートしていません。';
-        var infoWindow = new google.maps.InfoWindow({map: map, position: pos, content: content});
-        infoWindow.open(map);
-    }
+            window.db = db;
+            window.ref = ref;
+            window.push = push;
+            window.set = set;
+            window.auth = auth;
+            window.onValue = onValue;
+            window.signInWithGoogle = async () => {
+                try {
+                    const result = await signInWithPopup(auth, provider);
+                    console.log("Googleアカウントでログイン成功:", result.user);
+                } catch (error) {
+                    console.error("Googleログインエラー:", error.message);
+                }
+            };
+        </script>
+        <!-- //**************************************************************************************** -->
 
-    function initAutocomplete(map) {
-        var autocomplete = new google.maps.places.Autocomplete(
-            document.getElementById('searchAreaBar'), {types: ['geocode']}
-        );
-        autocomplete.addListener('place_changed', function() {
-            var place = autocomplete.getPlace();
-            if (!place.geometry) {
-                window.alert("詳細が見つかりませんでした: '" + place.name + "'");
-                return;
+        <!-- 現在地の取得と表示 -->
+        <script>
+            function initMap() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        var pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+
+                        var map = new google.maps.Map(document.getElementById('map'), {
+                            center: pos,
+                            zoom: 15
+                        });
+
+                        var marker = new google.maps.Marker({
+                            position: pos,
+                            map: map,
+                            title: '現在地'
+                        });
+
+                        initAutocomplete(map);  // Autocompleteを初期化する際にマップオブジェクトを渡す
+                    }, function () {
+                        handleLocationError(true, map, map.getCenter());
+                    });
+                } else {
+                    // ブラウザがGeolocationをサポートしていない場合
+                    handleLocationError(false, map, map.getCenter());
+                }
+
+                
             }
-            map.setCenter(place.geometry.location);
-        });
-    }
 
-    function onPlaceChanged() {
-        var place = autocomplete.getPlace();
-        if (!place.geometry) {
-            // User entered the name of a Place that was not suggested and
-            // pressed the Enter key, or the Place Details request failed.
-            window.alert("詳細が見つかりませんでした: '" + place.name + "'");
-            return;
+            function handleLocationError(browserHasGeolocation, map, pos) {
+                var content = browserHasGeolocation ?
+                    'エラー: Geolocation サービスが失敗しました。' :
+                    'エラー: お使いのブラウザは Geolocation をサポートしていません。';
+                var infoWindow = new google.maps.InfoWindow({ map: map, position: pos, content: content });
+                infoWindow.open(map);
+            }
+
+            // 地図上を検索、移動
+            function initAutocomplete(map) {
+                var autocomplete = new google.maps.places.Autocomplete(
+                    document.getElementById('searchAreaBar'), { types: ['geocode'] }
+                );
+                autocomplete.addListener('place_changed', function () {
+                    var place = autocomplete.getPlace();
+                    if (!place.geometry) {
+                        window.alert("詳細が見つかりませんでした: '" + place.name + "'");
+                        return;
+                    }
+                    map.setCenter(place.geometry.location);
+                });
+            }
+
+            function onPlaceChanged() {
+                var place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    window.alert("詳細が見つかりませんでした: '" + place.name + "'");
+                    return;
+                }
+            }
+
+            // 投稿画面の表示
+            $(document).ready(function () {
+                $("#post").on("click", function () {
+                    $("#postFormContainer").fadeIn();
+                });
+                $("#closePostForm").on("click", function () {
+                    $("#postFormContainer").fadeOut();
+                });
+            });
+
+            // 投稿画面の店舗名入力からの自動補完機能
+            $(document).ready(function() {
+                function initAutocomplete() {
+                    autocomplete = new google.maps.places.Autocomplete(
+                        document.getElementById('storeNamePost'), {types: ['establishment']} //店舗名のみ検索
+                    );
+                    autocomplete.setFields(['place_id', 'name', 'formatted_address', 'website',]);
+                    autocomplete.addListener('place_changed', fillInAddress);
+                }
+
+                function fillInAddress() {
+                    var place = autocomplete.getPlace();
+                    if (!place.place_id) {
+                        return;
+                    }
+                    var address = place.formatted_address.split(' ').slice(1).join(' '); // 郵便番号を除外して残りを結合
+
+                    $("#addressPost").val(address || '');
+                    $("#urlPost").val(place.website || '');
+
+                    // 店舗名のみを 'storeNamePost' 入力フィールドに設定
+                    $("#storeNamePost").val(place.name);
+                }
+
+                initAutocomplete();
+            });
+        </script>
+
+<!-- セレクトボックスで値が選択されていない時のフォントカラーを設定 -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var selectElements = document.querySelectorAll('select');
+    
+        selectElements.forEach(function(select) {
+            select.addEventListener('change', function() {
+                if (this.value === "") {
+                    this.style.color = 'gray';
+                } else {
+                this.style.color = 'black';
+            }
+            });
+            // 初期ロード時にも適用
+            if (select.value === "") {
+                select.style.color = 'gray';
+            } else {
+            select.style.color = 'black';
         }
-
-        // Display details about the valid place.
-        document.getElementById('latitude').value = place.geometry.location.lat();
-        document.getElementById('longitude').value = place.geometry.location.lng();
-        document.getElementById('genre').value = place.types.join(', ');
-        document.getElementById('budget').value = place.price_level;
-        document.getElementById('url').value = place.url;
-
-        // Create an infobox and display it on the map
-        var infowindow = new google.maps.InfoWindow({
-            content: createContentForInfobox(place)
         });
-
-        var marker = new google.maps.Marker({
-            position: place.geometry.location,
-            map: map,
-            title: place.name
-        });
-
-        marker.addListener('click', function() {
-            infowindow.open(map, marker);
-        });
-    }
-
-    function createContentForInfobox(place) {
-        return '<div><strong>' + place.name + '</strong><br>' +
-               'ジャンル: ' + place.types.join(', ') + '<br>' +
-               '予算: ' + place.price_level + '<br>' +
-               'URL: <a href="' + place.url + '">' + place.url + '</a></div>';
-    }
+    });
     </script>
-</body>
-</html>
 
+<script>
+    $(document).ready(function() {
+        $('#submitPost').click(async function() {
+            try {
+                var storeName = $('#storeNamePost').val();
+                var address = $('#addressPost').val();
+                var url = $('#urlPost').val();
+                var genre = $('#genrePost').val();
+                var scene = $('#scenePost').val();
+                var budget = $('#budgetPost').val();
+                var impression = $('#impressionPost').val();
+
+                // 住所から緯度経度を取得する処理
+                var geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ 'address': address }, function(results, status) {
+                    if (status == 'OK') {
+                        var latitude = results[0].geometry.location.lat();
+                        var longitude = results[0].geometry.location.lng();
+
+                        // Firebaseに保存するデータ
+                        var postData = {
+                            storeName: storeName,
+                            address: address,
+                            url: url,
+                            genre: genre,
+                            scene: scene,
+                            budget: budget,
+                            impression: impression,
+                            latitude: latitude,
+                            longitude: longitude
+                        };
+
+                        var newPostRef = window.push(window.ref(window.db, 'posts'));
+                        window.set(newPostRef, postData);
+                        alert('投稿が成功しました！');
+
+                        // フォームのリセット
+                        $('#storeNamePost').val('');
+                        $('#addressPost').val('');
+                        $('#urlPost').val('');
+                        $('#genrePost').val('');
+                        $('#scenePost').val('');
+                        $('#budgetPost').val('');
+                        $('#impressionPost').val('');
+
+                        $('#postFormContainer').fadeOut();
+                    } else {
+                        alert('住所からの緯度経度の取得に失敗しました: ' + status);
+                    }
+                });
+            } catch (error) {
+                console.error('投稿に失敗しました:', error);
+                alert('投稿に失敗しました: ' + error.message);
+            }
+        });
+    });
+</script>
+
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAN01vt35jhrqmaeNxcINCUb85gE_lRbm4&libraries=places&callback=initMap"></script>
+
+</body>
+
+</html>
+</html>
+</html>
 
