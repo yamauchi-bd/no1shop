@@ -86,14 +86,18 @@
 // Firebase
 //**************************************************************************************** -->
         <script type="module">
-            // Import the functions you need from the SDKs you need
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-            import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
-            import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+            import { GOOGLE_MAPS_API_KEY, FIREBASE_API_KEY } from './key.js';
 
-            // Your web app's Firebase configuration
+            // Google Maps APIのスクリプトタグを動的に生成
+            const googleMapsScript = document.createElement('script');
+            googleMapsScript.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initMap`;
+            googleMapsScript.async = true;
+            googleMapsScript.defer = true;
+            document.head.appendChild(googleMapsScript);
+
+            // Firebaseの設定を動的に更新
             const firebaseConfig = {
-                apiKey: "AIzaSyCMz-NgvsySJRbf-yBFramedZeykiBY1jU",
+                apiKey: FIREBASE_API_KEY,
                 authDomain: "no1map.firebaseapp.com",
                 projectId: "no1map",
                 storageBucket: "no1map.appspot.com",
@@ -102,6 +106,10 @@
             };
 
             // Initialize Firebase
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+            import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+            import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+
             const app = initializeApp(firebaseConfig);
             const db = getDatabase(app);
             const auth = getAuth(app);
@@ -145,7 +153,7 @@
                             title: '現在地'
                         });
 
-                        initAutocomplete(map);  // Autocompleteを初期化する際にマップオブジェクトを渡す
+                        initAutocomplete(map);  // ここでAutocompleteを初期化
                     }, function () {
                         handleLocationError(true, map, map.getCenter());
                     });
@@ -153,8 +161,6 @@
                     // ブラウザがGeolocationをサポートしていない場合
                     handleLocationError(false, map, map.getCenter());
                 }
-
-                
             }
 
             function handleLocationError(browserHasGeolocation, map, pos) {
@@ -218,7 +224,7 @@
                     $("#addressPost").val(address || '');
                     $("#urlPost").val(place.website || '');
 
-                    // 店舗名のみを 'storeNamePost' 入力フィールドに設定
+                    // 店舗名のを 'storeNamePost' 入力フィールドに設定
                     $("#storeNamePost").val(place.name);
                 }
 
@@ -285,7 +291,7 @@
                         window.set(newPostRef, postData);
                         alert('投稿が成功しました！');
 
-                        // フォームのリセット
+                        // フォームのセット
                         $('#storeNamePost').val('');
                         $('#addressPost').val('');
                         $('#urlPost').val('');
@@ -307,8 +313,6 @@
     });
 </script>
 
-<script async defer
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAN01vt35jhrqmaeNxcINCUb85gE_lRbm4&libraries=places&callback=initMap"></script>
 
 </body>
 
