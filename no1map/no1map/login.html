@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../login.css">
+    <script src="https://kit.fontawesome.com/17c882a708.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <title>No.1 MAP</title>
+</head>
+
+<body>
+    <div id="loginContainer">
+        <p>みんなの人生No.1グルメを紹介！</p>
+        <h1>No.1 MAP</h1>
+        <button id="loginWithGoogle" onclick="signInWithGoogle()"><i class="fab fa-google"></i>｜Googleでログイン</button>
+    </div>
+    
+    <div id="profileContainer">
+        <h1>プロフィールを登録しよう</h1>
+        <div class="flex-container">
+            <div class="profile-pic" style="background-image: url('path_to_default_profile_picture.jpg');" onclick="document.getElementById('profilePictureInput').click();">
+                <div onclick="document.getElementById('profilePictureInput').click();" style="cursor: pointer;">
+                    <span>画像を選ぶ <i class="fa-solid fa-square-plus"></i></span>
+                </div>
+            </div>
+            <input type="file" id="profilePictureInput" style="display: none;" onchange="updateProfilePicturePreview(this)">
+            <div class="profile-info">
+                <input type="text" id="nickname" placeholder="ニックネーム      " class="nickname">
+                <!-- 複数選択にする -->
+                <select id="favoriteGenre" class="genre">
+                    <option value="">好きなジャンル</option>
+                    <option value="フレンチ">フレンチ</option>
+                    <option value="イタリアン">イタリアン</option>
+                    <option value="日本料理">日本料理</option>
+                </select>
+            </div>
+        </div>
+        <button onclick="saveProfile()" class="register-button">登録する</button>
+    </div>
+    
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
+    
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMz-NgvsySJRbf-yBFramedZeykiBY1jU",
+            authDomain: "no1map.firebaseapp.com",
+            projectId: "no1map",
+            storageBucket: "no1map.appspot.com",
+            messagingSenderId: "158515178223",
+            appId: "1:158515178223:web:18f6d16f88becac68a491a"
+        };
+    
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+    
+        window.db = db;
+        window.ref = ref;
+        window.push = push;
+        window.set = set;
+        window.auth = auth;
+        window.onValue = onValue;
+        window.signInWithGoogle = async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                console.log("ログイン結果:", result);
+                const userId = result.user.uid;
+                const userRef = ref(db, 'users/' + userId);
+
+                onValue(userRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        console.log("プロフィールが既に存在します。");
+                        $('#loginContainer').show();
+                        $('#profileContainer').hide();
+                        window.location.href = 'map.html'; // 登録済みの場合、map.htmlに遷移
+                    } else {
+                        console.log("プロフィールが存在しません。プロフィール登録画面を表示します。");
+                        $('#loginContainer').hide();
+                        $('#profileContainer').fadeIn();
+                    }
+                }, {
+                    onlyOnce: true
+                });
+
+            } catch (error) {
+                console.error("Googleロインエラー:", error.message);
+            }
+        };
+
+        window.saveProfile = async () => {
+            const nickname = document.getElementById('nickname').value;
+            const favoriteGenre = document.getElementById('favoriteGenre').value;
+            const profilePicture = document.getElementById('profilePictureInput').files[0];
+            const userId = auth.currentUser.uid;
+
+            let profilePictureUrl = '';
+
+            if (profilePicture) {
+                const pictureRef = storageRef(getStorage(), 'profilePictures/' + userId);
+                await uploadBytes(pictureRef, profilePicture);
+                profilePictureUrl = await getDownloadURL(pictureRef);
+            }
+
+            await set(ref(db, 'users/' + userId), {
+                nickname: nickname,
+                favoriteGenre: favoriteGenre,
+                profilePictureUrl: profilePictureUrl
+            });
+
+            $('#profileContainer').fadeOut(); // 登録後、画面をフェードアウト
+            window.location.href = 'map.html'; // 登録完了後、map.htmlに遷移
+        };
+
+        // onAuthStateChanged(auth, user => {
+        //     if (user) {
+        //         // ユーザーがログインしている場合、map.htmlにリダイレクト
+        //         window.location.href = 'map.html';
+        //     } else {
+        //         // ユーザーがログインしていない場合、ログインフォームを表示
+        //         $('#loginContainer').show();
+        //     }
+        // });
+    </script>
+
+    <script>
+        function updateProfilePicturePreview(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.querySelector('.profile-pic').style.backgroundImage = 'url(' + e.target.result + ')';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var favoriteGenreSelect = document.getElementById('favoriteGenre');
+            function updateSelectColor() {
+                favoriteGenreSelect.style.color = favoriteGenreSelect.value === "" ? 'lightgray' : 'black';
+            }
+            favoriteGenreSelect.addEventListener('change', updateSelectColor);
+            updateSelectColor(); // 初期ロード時にも適用
+        });
+    </script>
+
+</body>
+</html>
+

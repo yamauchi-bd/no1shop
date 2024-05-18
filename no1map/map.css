@@ -98,7 +98,7 @@
 
 #postForm {
     position: absolute;
-    top: 50%; /* 画面の中央に配置 */
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 80%;
@@ -119,6 +119,10 @@
     padding: 10px;
     margin-bottom: 10px;
     font-size: 16px;
+}
+
+#postForm input::placeholder,#postForm textarea::placeholder {
+    color: lightgray;
 }
 
 select option[value=""] {
@@ -157,7 +161,8 @@ select option[value=""] {
     width: 50%;
     border-radius: 20px;
     padding: 10px 20px;
-    margin: 10px auto;
+    margin: 25px auto;
+    margin-bottom: 10px;
     color: white;
     font-size: 16px;
     cursor: pointer;
@@ -168,3 +173,30 @@ select option[value=""] {
 #postForm #submitPost:hover {
     background: #f7893f;
 }
+
+.custom-file-upload {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#customFileBtn {
+    font-size: 16px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 5px;
+    color: rgb(185, 185, 185);
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+#customFileBtn:hover {
+    background-color: #e0e0e0;
+}
+
+#fileChosen {
+    color: rgb(155, 155, 155);
+    font-size: 14px;
+}
+

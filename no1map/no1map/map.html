@@ -4,16 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>No,1 MAP</title>
-    <link rel="stylesheet" href="map.css">
+    <title>No.1 MAP</title>
+    <link rel="stylesheet" href="../map.css">
     <script src="https://kit.fontawesome.com/17c882a708.js" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 
 <body>
     <div id="map"></div>
+    
     <div id="searchArea">
-        <input type="text" id="searchAreaBar" placeholder="地図を移動">
+        <input type="text" id="mapSearchBar" placeholder="地図を移動">
         <button id="searchAreaButton"><i class="fa-solid fa-magnifying-glass"></i></button>
     </div>
 
@@ -22,7 +23,7 @@
             <option value="">ジャンル</option>
             <option value="フレンチ">フレンチ</option>
             <option value="イタリアン">イタリアン</option>
-            <option value="日料理">日本料理</option>
+            <option value="日本料理">日本料理</option>
         </select>
         <select name="" id="sceneFilter">
             <option value="">利用シーン</option>
@@ -77,63 +78,33 @@
                 <option value="5000円〜10000円">5000円〜10000円</option>
                 <option value="10000円〜">10000円〜</option>
             </select>
-            <textarea id="impressionPost" placeholder="感想コメント"></textarea>
+            <textarea id="impressionPost" placeholder="おすすめポイント"></textarea>
+            <!-- 画像アップロードのためのinput要素を追加 -->
+            <div class="custom-file-upload">
+                <input type="file" id="imagePost" accept="image/*" style="display:none;">
+                <button id="customFileBtn">画像を追加　<i class="fa-solid fa-plus"></i></button>
+                <span id="fileChosen">選択されていません</span>
+            </div>
             <button id="submitPost">投稿</button>
             <button id="closePostForm"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <!-- //****************************************************************************************
-// Firebase
-//**************************************************************************************** -->
         <script type="module">
-            import { GOOGLE_MAPS_API_KEY, FIREBASE_API_KEY } from './key.js';
+            import { GOOGLE_MAPS_API_KEY, FIREBASE_API_KEY } from '../key.js';
 
             // Google Maps APIのスクリプトタグを動的に生成
             const googleMapsScript = document.createElement('script');
-            googleMapsScript.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initMap`;
+            googleMapsScript.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=onGoogleScriptLoad`;
             googleMapsScript.async = true;
             googleMapsScript.defer = true;
             document.head.appendChild(googleMapsScript);
 
-            // Firebaseの設定を動的に更新
-            const firebaseConfig = {
-                apiKey: FIREBASE_API_KEY,
-                authDomain: "no1map.firebaseapp.com",
-                projectId: "no1map",
-                storageBucket: "no1map.appspot.com",
-                messagingSenderId: "158515178223",
-                appId: "1:158515178223:web:18f6d16f88becac68a491a"
+            // <!-- 現在地の取得と表示 -->
+            window.onGoogleScriptLoad = function() {
+                initMap();
+                initAutocomplete(); // Google Maps APIが読み込まれた後に呼び出す
             };
 
-            // Initialize Firebase
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-            import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
-            import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-
-            const app = initializeApp(firebaseConfig);
-            const db = getDatabase(app);
-            const auth = getAuth(app);
-            const provider = new GoogleAuthProvider();
-
-            window.db = db;
-            window.ref = ref;
-            window.push = push;
-            window.set = set;
-            window.auth = auth;
-            window.onValue = onValue;
-            window.signInWithGoogle = async () => {
-                try {
-                    const result = await signInWithPopup(auth, provider);
-                    console.log("Googleアカウントでログイン成功:", result.user);
-                } catch (error) {
-                    console.error("Googleログインエラー:", error.message);
-                }
-            };
-        </script>
-        <!-- //**************************************************************************************** -->
-
-        <!-- 現在地の取得と表示 -->
-        <script>
             function initMap() {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(function (position) {
@@ -163,18 +134,9 @@
                 }
             }
 
-            function handleLocationError(browserHasGeolocation, map, pos) {
-                var content = browserHasGeolocation ?
-                    'エラー: Geolocation サービスが失敗しました。' :
-                    'エラー: お使いのブラウザは Geolocation をサポートしていません。';
-                var infoWindow = new google.maps.InfoWindow({ map: map, position: pos, content: content });
-                infoWindow.open(map);
-            }
-
-            // 地図上を検索、移動
             function initAutocomplete(map) {
                 var autocomplete = new google.maps.places.Autocomplete(
-                    document.getElementById('searchAreaBar'), { types: ['geocode'] }
+                    document.getElementById('mapSearchBar'), { types: ['geocode'] }
                 );
                 autocomplete.addListener('place_changed', function () {
                     var place = autocomplete.getPlace();
@@ -186,8 +148,92 @@
                 });
             }
 
+            function handleLocationError(browserHasGeolocation, map, pos) {
+                var content = browserHasGeolocation ?
+                    'エラー: Geolocation サービスが失敗しました。' :
+                    'エラー: お使いのブラウザは Geolocation をサポートしていません。';
+                var infoWindow = new google.maps.InfoWindow({ map: map, position: pos, content: content });
+                infoWindow.open(map);
+            }
+
             function onPlaceChanged() {
                 var place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    window.alert("詳細が見つかりませんでした: '" + place.name + "'");
+                    return;
+                }
+            }
+
+            // <!-- //****************************************************************************************
+// Firebase
+//**************************************************************************************** -->
+
+            // Firebaseの設定を動的に更新
+            const firebaseConfig = {
+                apiKey: FIREBASE_API_KEY,
+                authDomain: "no1map.firebaseapp.com",
+                projectId: "no1map",
+                storageBucket: "no1map.appspot.com",
+                messagingSenderId: "158515178223",
+                appId: "1:158515178223:web:18f6d16f88becac68a491a"
+            };
+
+            // Initialize Firebase
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+            import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+            import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+            import { getStorage } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
+
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+            const auth = getAuth(app);
+            const storage = getStorage(app);
+            const provider = new GoogleAuthProvider();
+
+            window.db = db;
+            window.ref = ref;
+            window.push = push;
+            window.set = set;
+            window.auth = auth;
+            window.storage = storage;
+            window.onValue = onValue;
+            window.signInWithGoogle = async () => {
+                try {
+                    const result = await signInWithPopup(auth, provider);
+                    console.log("Googleアカウントでログイン成功:", result.user);
+                } catch (error) {
+                    console.error("Googleログインエラー:", error.message);
+                }
+            };
+        </script>
+        <!-- //**************************************************************************************** -->
+
+        <!-- 地図検索の自動補完-->
+        <script>
+            function initMapAutocomplete(map) {
+                var mapAutocomplete = new google.maps.places.Autocomplete(
+                    document.getElementById('searchAreaBar'), { types: ['geocode'] }
+                );
+                mapAutocomplete.addListener('place_changed', function () {
+                    var place = mapAutocomplete.getPlace();
+                    if (!place.geometry) {
+                        window.alert("詳細が見つかりませんでた: '" + place.name + "'");
+                        return;
+                    }
+                    map.setCenter(place.geometry.location);
+                });
+            }
+
+            function handleLocationError(browserHasGeolocation, map, pos) {
+                var content = browserHasGeolocation ?
+                    'エラー: Geolocation サービスが失敗しました。' :
+                    'エラー: お使いのブラウザは Geolocation をサポートしていません。';
+                var infoWindow = new google.maps.InfoWindow({ map: map, position: pos, content: content });
+                infoWindow.open(map);
+            }
+
+            function onPlaceChanged() {
+                var place = mapAutocomplete.getPlace();
                 if (!place.geometry) {
                     window.alert("詳細が見つかりませんでした: '" + place.name + "'");
                     return;
@@ -206,16 +252,18 @@
 
             // 投稿画面の店舗名入力からの自動補完機能
             $(document).ready(function() {
-                function initAutocomplete() {
-                    autocomplete = new google.maps.places.Autocomplete(
+                let postAutocomplete; // グローバル変数として定義しておく
+
+                function initPostAutocomplete() {
+                    postAutocomplete = new google.maps.places.Autocomplete(
                         document.getElementById('storeNamePost'), {types: ['establishment']} //店舗名のみ検索
                     );
-                    autocomplete.setFields(['place_id', 'name', 'formatted_address', 'website',]);
-                    autocomplete.addListener('place_changed', fillInAddress);
+                    postAutocomplete.setFields(['place_id', 'name', 'formatted_address', 'website']);
+                    postAutocomplete.addListener('place_changed', fillInAddress);
                 }
 
                 function fillInAddress() {
-                    var place = autocomplete.getPlace();
+                    var place = postAutocomplete.getPlace();
                     if (!place.place_id) {
                         return;
                     }
@@ -224,36 +272,38 @@
                     $("#addressPost").val(address || '');
                     $("#urlPost").val(place.website || '');
 
-                    // 店舗名のを 'storeNamePost' 入力フィールドに設定
+                    // 店舗名を 'storeNamePost' 入力フィールドに設定
                     $("#storeNamePost").val(place.name);
                 }
 
-                initAutocomplete();
+                initPostAutocomplete(); // DOMが準備できたら初期化
             });
         </script>
 
-<!-- セレクトボックスで値が選択されていない時のフォントカラーを設定 -->
+<!-- 投稿フォームのセレクトボックスで値が選択されていない時のフォントカラーを設定 -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var selectElements = document.querySelectorAll('select');
-    
-        selectElements.forEach(function(select) {
+        // 投稿フォームとマップフィルター内のセレクト要素を対象にする
+        var postFormSelects = document.querySelectorAll('#postForm select');
+        var mapFilterSelects = document.querySelectorAll('#mapFilter select');
+
+        function updateSelectColor(select, emptyColor, filledColor) {
             select.addEventListener('change', function() {
-                if (this.value === "") {
-                    this.style.color = 'gray';
-                } else {
-                this.style.color = 'black';
-            }
+                this.style.color = this.value === "" ? emptyColor : filledColor;
             });
             // 初期ロード時にも適用
-            if (select.value === "") {
-                select.style.color = 'gray';
-            } else {
-            select.style.color = 'black';
+            select.style.color = select.value === "" ? emptyColor : filledColor;
         }
+
+        postFormSelects.forEach(function(select) {
+            updateSelectColor(select, 'lightgray', 'black'); // 投稿フォーム用の色設定
+        });
+
+        mapFilterSelects.forEach(function(select) {
+            updateSelectColor(select, 'gray', 'black'); // マップフィルター用の色設定
         });
     });
-    </script>
+</script>
 
 <script>
     $(document).ready(function() {
@@ -266,10 +316,11 @@
                 var scene = $('#scenePost').val();
                 var budget = $('#budgetPost').val();
                 var impression = $('#impressionPost').val();
+                var imageFile = $('#imagePost').prop('files')[0]; // 画像ファイルを取得
 
                 // 住所から緯度経度を取得する処理
                 var geocoder = new google.maps.Geocoder();
-                geocoder.geocode({ 'address': address }, function(results, status) {
+                geocoder.geocode({ 'address': address }, async function(results, status) {
                     if (status == 'OK') {
                         var latitude = results[0].geometry.location.lat();
                         var longitude = results[0].geometry.location.lng();
@@ -288,10 +339,19 @@
                         };
 
                         var newPostRef = window.push(window.ref(window.db, 'posts'));
-                        window.set(newPostRef, postData);
-                        alert('投稿が成功しました！');
+                        await window.set(newPostRef, postData);
 
-                        // フォームのセット
+                        // 画像があればFirebase Storageにアップロード
+                        if (imageFile) {
+                            var storageRef = window.storage().ref();
+                            var imageRef = storageRef.child('images/' + newPostRef.key + '/' + imageFile.name);
+                            await imageRef.put(imageFile);
+                            var imageUrl = await imageRef.getDownloadURL();
+                            await window.set(newPostRef.child('imageUrl'), imageUrl);
+                        }
+
+                        alert('投稿が成功しました！');
+                        // フォームのリセット
                         $('#storeNamePost').val('');
                         $('#addressPost').val('');
                         $('#urlPost').val('');
@@ -299,6 +359,7 @@
                         $('#scenePost').val('');
                         $('#budgetPost').val('');
                         $('#impressionPost').val('');
+                        $('#imagePost').val('');
 
                         $('#postFormContainer').fadeOut();
                     } else {
@@ -313,10 +374,17 @@
     });
 </script>
 
+<script>
+    document.getElementById('customFileBtn').addEventListener('click', function() {
+        document.getElementById('imagePost').click();
+    });
+
+    document.getElementById('imagePost').addEventListener('change', function() {
+        var fileName = this.files[0] ? this.files[0].name : "選択されていません";
+        document.getElementById('fileChosen').textContent = fileName;
+    });
+</script>
 
 </body>
-
-</html>
-</html>
 </html>
 
