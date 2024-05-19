@@ -16,7 +16,7 @@
         <button id="loginWithGoogle" onclick="signInWithGoogle()"><i class="fab fa-google"></i>｜Googleでログイン</button>
     </div>
     
-    <div id="profileContainer">
+    <div id="profileContainer" style="display: none;">
         <h1>プロフィールを登録しよう</h1>
         <div class="flex-container">
             <div class="profile-pic" style="background-image: url('path_to_default_profile_picture.jpg');" onclick="document.getElementById('profilePictureInput').click();">
@@ -119,15 +119,15 @@
             window.location.href = 'map.html'; // 登録完了後、map.htmlに遷移
         };
 
-        // onAuthStateChanged(auth, user => {
-        //     if (user) {
-        //         // ユーザーがログインしている場合、map.htmlにリダイレクト
-        //         window.location.href = 'map.html';
-        //     } else {
-        //         // ユーザーがログインしていない場合、ログインフォームを表示
-        //         $('#loginContainer').show();
-        //     }
-        // });
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                // ユーザーがログインしている場合、map.htmlにリダイレクト
+                window.location.href = 'map.html';
+            } else {
+                // ユーザーがログインしていない場合、ログインフォームを表示
+                $('#loginContainer').show();
+            }
+        });
     </script>
 
     <script>
@@ -155,4 +155,3 @@
 
 </body>
 </html>
-
