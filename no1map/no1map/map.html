@@ -90,7 +90,130 @@
         </div>
 
         <script type="module">
+            import { FIREBASE_API_KEY } from '../key.js';
+            // Initialize Firebase
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+            import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+            import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+            import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
+
+            // Firebaseの設定を動的に更新
+            const firebaseConfig = {
+                apiKey: FIREBASE_API_KEY,
+                authDomain: "no1map.firebaseapp.com",
+                projectId: "no1map",
+                storageBucket: "no1map.appspot.com",
+                messagingSenderId: "158515178223",
+                appId: "1:158515178223:web:18f6d16f88becac68a491a"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+            const auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
+
+            window.db = db;
+            window.ref = ref;
+            window.push = push;
+            window.set = set;
+            window.auth = auth;
+            window.onValue = onValue;
+            window.signInWithGoogle = async () => {
+                try {
+                    const result = await signInWithPopup(auth, provider);
+                    console.log("Googleアカウントでログイン成功:", result.user);
+                } catch (error) {
+                    console.error("Googleログインエラー:", error.message);
+                }
+            };
+
+            $(document).ready(function () {
+                $('#submitPost').click(async function () {
+                    console.log('投稿ボタンがクリックされました');
+                    try {
+                        var storeName = $('#storeNamePost').val();
+                        var address = $('#addressPost').val();
+                        var url = $('#urlPost').val();
+                        var genre = $('#genrePost').val();
+                        var scene = $('#scenePost').val();
+                        var budget = $('#budgetPost').val();
+                        var impression = $('#impressionPost').val();
+                        var imageFile = $('#imagePost').prop('files')[0]; // 画像ファイルを取得
+
+                        // Firebaseに新しい投稿の参照を作成
+                        var newPostRef = window.push(window.ref(window.db, 'posts'));
+
+                        var imageUrl = ''; // 画像URLを初期化
+
+                        // 画像があればFirebase Storageにアップロード
+                        if (imageFile) {
+                            var imageRef = storageRef(getStorage(), 'images/' + newPostRef.key + '/' + imageFile.name);
+                            await uploadBytes(imageRef, imageFile);
+                            imageUrl = await getDownloadURL(imageRef);
+                        }
+
+                        // 住所から緯度経度を取得する処理
+                        var geocoder = new google.maps.Geocoder();
+                        geocoder.geocode({ 'address': address }, async function (results, status) {
+                            if (status == 'OK') {
+                                var latitude = results[0].geometry.location.lat();
+                                var longitude = results[0].geometry.location.lng();
+
+                                // Firebaseに保存するデータ
+                                var postData = {
+                                    storeName: storeName,
+                                    address: address,
+                                    url: url,
+                                    genre: genre,
+                                    scene: scene,
+                                    budget: budget,
+                                    impression: impression,
+                                    imageUrl: imageUrl, // 画像URLを含める
+                                    latitude: latitude,
+                                    longitude: longitude
+                                };
+
+                                await window.set(newPostRef, postData);
+
+                                alert('投稿が成功しました！');
+                                // フォームのリセット
+                                $('#storeNamePost').val('');
+                                $('#addressPost').val('');
+                                $('#urlPost').val('');
+                                $('#genrePost').val('');
+                                $('#scenePost').val('');
+                                $('#budgetPost').val('');
+                                $('#impressionPost').val('');
+                                $('#imagePost').val('');
+
+                                $('#postFormContainer').fadeOut();
+                            } else {
+                                alert('住所からの緯度経度の取得に失敗しました: ' + status);
+                            }
+                        });
+                    } catch (error) {
+                        console.error('投稿に失敗しました:', error);
+                        alert('投稿に失敗しました: ' + error.message);
+                    }
+                });
+            });
+        </script>
+
+        <script>
+            document.getElementById('customFileBtn').addEventListener('click', function () {
+                document.getElementById('imagePost').click();
+            });
+
+            document.getElementById('imagePost').addEventListener('change', function () {
+                var fileName = this.files[0] ? this.files[0].name : "選択されていません";
+                document.getElementById('fileChosen').textContent = fileName;
+            });
+        </script>
+
+        <script type="module">
             import { GOOGLE_MAPS_API_KEY, FIREBASE_API_KEY } from '../key.js';
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+            import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
             // Google Maps APIのスクリプトタグを動的に生成
             const googleMapsScript = document.createElement('script');
@@ -105,6 +228,8 @@
                 initAutocomplete(); // Google Maps APIが読み込まれた後に呼び出す
             };
 
+            let map;
+
             function initMap() {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(function (position) {
@@ -113,15 +238,21 @@
                             lng: position.coords.longitude
                         };
 
-                        var map = new google.maps.Map(document.getElementById('map'), {
+                        map = new google.maps.Map(document.getElementById('map'), {
                             center: pos,
                             zoom: 15
                         });
 
-                        var marker = new google.maps.Marker({
-                            position: pos,
+                        // 青い丸で現在地を表示
+                        new google.maps.Circle({
+                            strokeColor: '#4285F4',
+                            strokeOpacity: 0.8,
+                            strokeWeight: 3,
+                            fillColor: '#4285F4',
+                            fillOpacity: 0.35,
+                            radius: 50,
                             map: map,
-                            title: '現在地'
+                            center: pos
                         });
 
                         initAutocomplete(map);  // ここでAutocompleteを初期化
@@ -131,6 +262,20 @@
                 } else {
                     window.handleLocationError(false, map, map.getCenter());
                 }
+
+                // Firebaseからデータを読み込み、マップにマーカーを表示
+                const db = getDatabase();
+                const postsRef = ref(db, 'posts');
+                onValue(postsRef, (snapshot) => {
+                    snapshot.forEach((childSnapshot) => {
+                        const postData = childSnapshot.val();
+                        new google.maps.Marker({
+                            position: { lat: postData.latitude, lng: postData.longitude },
+                            map: map,
+                            title: postData.storeName
+                        });
+                    });
+                });
             }
 
             function initAutocomplete(map) {
@@ -163,7 +308,7 @@
                 }
             }
 
-            
+
         </script>
         <!-- //**************************************************************************************** -->
 
@@ -264,124 +409,7 @@
             });
         </script>
 
-        <script type="module">
-            import { FIREBASE_API_KEY } from '../key.js';
-            // Initialize Firebase
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-            import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
-            import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-            import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
 
-            // Firebaseの設定を動的に更新
-            const firebaseConfig = {
-                apiKey: FIREBASE_API_KEY,
-                authDomain: "no1map.firebaseapp.com",
-                projectId: "no1map",
-                storageBucket: "no1map.appspot.com",
-                messagingSenderId: "158515178223",
-                appId: "1:158515178223:web:18f6d16f88becac68a491a"
-            };
-
-            const app = initializeApp(firebaseConfig);
-            const db = getDatabase(app);
-            const auth = getAuth(app);
-            const provider = new GoogleAuthProvider();
-
-            window.db = db;
-            window.ref = ref;
-            window.push = push;
-            window.set = set;
-            window.auth = auth;
-            window.onValue = onValue;
-            window.signInWithGoogle = async () => {
-                try {
-                    const result = await signInWithPopup(auth, provider);
-                    console.log("Googleアカウントでログイン成功:", result.user);
-                } catch (error) {
-                    console.error("Googleログインエラー:", error.message);
-                }
-            };
-
-            $(document).ready(function () {
-                $('#submitPost').click(async function () {
-                    console.log('投稿ボタンがクリックされました');
-                    try {
-                        var storeName = $('#storeNamePost').val();
-                        var address = $('#addressPost').val();
-                        var url = $('#urlPost').val();
-                        var genre = $('#genrePost').val();
-                        var scene = $('#scenePost').val();
-                        var budget = $('#budgetPost').val();
-                        var impression = $('#impressionPost').val();
-                        var imageFile = $('#imagePost').prop('files')[0]; // 画像ファイルを取得
-
-                        // Firebaseに新しい投稿の参照を作成
-                        var newPostRef = window.push(window.ref(window.db, 'posts'));
-
-                        // 画像があればFirebase Storageにアップロード
-                        if (imageFile) {
-                            var imageRef = storageRef(getStorage(), 'images/' + newPostRef.key + '/' + imageFile.name);
-                            await uploadBytes(imageRef, imageFile);
-                            var imageUrl = await getDownloadURL(imageRef);
-                        }
-
-                        // 住所から緯度経度を取得する処理
-                        var geocoder = new google.maps.Geocoder();
-                        geocoder.geocode({ 'address': address }, async function (results, status) {
-                            if (status == 'OK') {
-                                var latitude = results[0].geometry.location.lat();
-                                var longitude = results[0].geometry.location.lng();
-
-                                // Firebaseに保存するデータ
-                                var postData = {
-                                    storeName: storeName,
-                                    address: address,
-                                    url: url,
-                                    genre: genre,
-                                    scene: scene,
-                                    budget: budget,
-                                    impression: impression,
-                                    imageUrl: imageUrl,
-                                    latitude: latitude,
-                                    longitude: longitude
-                                };
-
-                                await window.set(newPostRef, postData);
-
-                                alert('投稿が成功しました！');
-                                // フォームのリセット
-                                $('#storeNamePost').val('');
-                                $('#addressPost').val('');
-                                $('#urlPost').val('');
-                                $('#genrePost').val('');
-                                $('#scenePost').val('');
-                                $('#budgetPost').val('');
-                                $('#impressionPost').val('');
-                                $('#imagePost').val('');
-
-                                $('#postFormContainer').fadeOut();
-                            } else {
-                                alert('住所からの緯度経度の取得に失敗しました: ' + status);
-                            }
-                        });
-                    } catch (error) {
-                        console.error('投稿に失敗しました:', error);
-                        alert('投稿に失敗しました: ' + error.message);
-                    }
-                });
-            });
-        </script>
-
-        <script>
-            document.getElementById('customFileBtn').addEventListener('click', function () {
-                document.getElementById('imagePost').click();
-            });
-
-            document.getElementById('imagePost').addEventListener('change', function () {
-                var fileName = this.files[0] ? this.files[0].name : "選択されていません";
-                document.getElementById('fileChosen').textContent = fileName;
-            });
-        </script>
 
         <script>
             // 共通のエラーハンドリング関数
@@ -401,5 +429,4 @@
 
 </body>
 
-</html>
 </html>
