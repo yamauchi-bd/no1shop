@@ -57,22 +57,22 @@
     <!-- 投稿画面 -->
     <div id="postFormContainer" style="display: none;">
         <div id="postForm">
-            <input type="text" id="storeNamePost" placeholder="店舗名">
-            <input type="text" id="addressPost" placeholder="住所">
+            <input type="text" id="storeNamePost" placeholder="店舗名" required>
+            <input type="text" id="addressPost" placeholder="住所" required>
             <input type="text" id="urlPost" placeholder="URL">
-            <select name="" id="genrePost">
+            <select name="" id="genrePost" required>
                 <option value="" selected>ジャンル</option>
                 <option value="フレンチ">フレンチ</option>
                 <option value="イタリアン">イタリアン</option>
                 <option value="日料理">日本料理</option>
             </select>
-            <select name="" id="scenePost">
+            <select name="" id="scenePost" required>
                 <option value="" selected>利用シーン</option>
                 <option value="デート">デート</option>
                 <option value="会食">会食</option>
                 <option value="日常">日常</option>
             </select>
-            <select name="" id="budgetPost">
+            <select name="" id="budgetPost" required>
                 <option value="" selected>予算</option>
                 <option value="〜5000円">〜5000円</option>
                 <option value="5000円〜10000円">5000円〜10000円</option>
@@ -240,7 +240,14 @@
 
                         map = new google.maps.Map(document.getElementById('map'), {
                             center: pos,
-                            zoom: 15
+                            zoom: 15,
+                            styles: [
+                        {
+                            featureType: "poi", // Points of Interestを非表示に
+                            elementType: "labels",
+                            stylers: [{ visibility: "off" }]
+                        }
+                    ]
                         });
 
                         // 青い丸で現在地を表示
@@ -269,10 +276,47 @@
                 onValue(postsRef, (snapshot) => {
                     snapshot.forEach((childSnapshot) => {
                         const postData = childSnapshot.val();
-                        new google.maps.Marker({
+                        const marker = new google.maps.Marker({
                             position: { lat: postData.latitude, lng: postData.longitude },
-                            map: map,
-                            title: postData.storeName
+                            map: map
+                        });
+
+                        //infoWindowの開閉
+                        const infoWindow = new google.maps.InfoWindow();
+                        let isHovering = false;
+
+                        marker.addListener('mouseover', function () {
+                            // 画像がある場合はimgタグを含める
+                            const imageHtml = postData.imageUrl ? `<img src="${postData.imageUrl}" alt="${postData.storeName}" style="width:100px; height:auto;"><br>` : '';
+                            infoWindow.setContent(`<div><strong><a href="${postData.url}" target="_blank">店名: ${postData.storeName}</strong></a><br>住所: ${postData.address}<br><br>ジャンル: ${postData.genre}<br>利用シーン: ${postData.scene}<br>予算: ${postData.budget}<br><br><em>コメント: ${postData.impression || '情報なし'}</em><br>${imageHtml}<br>投稿者: ${postData.userName || '匿名'}</div>`);
+                            infoWindow.open(map, marker);
+                        });
+
+                        google.maps.event.addListener(infoWindow, 'domready', function () {
+                            // InfoWindowのDOM要素にマウスイベントを設定
+                            const iwOuter = $('.gm-style-iw').last();
+                            const iwBackground = iwOuter.prev();
+                            iwBackground.children(':nth-child(2)').css({ 'display': 'none' });
+                            iwBackground.children(':nth-child(4)').css({ 'display': 'none' });
+
+                            iwOuter.parent().parent().hover(function () {
+                                isHovering = true;
+                            }, function () {
+                                isHovering = false;
+                                setTimeout(() => {
+                                    if (!isHovering) {
+                                        infoWindow.close();
+                                    }
+                                }, 500); // 0.5秒後に閉じる
+                            });
+                        });
+
+                        marker.addListener('mouseout', function () {
+                            setTimeout(() => {
+                                if (!isHovering) {
+                                    infoWindow.close();
+                                }
+                            }, 500); // 0.5秒後に閉じる
                         });
                     });
                 });
