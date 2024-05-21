@@ -95,7 +95,7 @@
         // Initialize Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
         import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
         import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
 
         // Firebaseの設定を動的に更新
@@ -112,8 +112,29 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+        var user = auth.currentUser;
+        console.log(auth);
 
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                // ユーザーがログインしている場合の処理
+                console.log("ログイン済みのユーザー:", user);
+                // ここでユーザー情報を取得したり、UIを更新したりする
+            } else {
+                // ユーザーがログアウトしている場合の処理
+                console.log("ユーザーはログインしていません。");
+                // ログイン画面にリダイレクトするなどの処理
+            }
+        });
 
+        // 持続性の設定をlocalに変更
+        setPersistence(auth, browserLocalPersistence)
+            .then(function () {
+                console.log("持続性の設定が成功しました");
+            })
+            .catch(function (error) {
+                console.error("持続性の設定エラー:", error);
+            });
 
         window.db = db;
         window.ref = ref;
@@ -121,14 +142,7 @@
         window.set = set;
         window.auth = auth;
         window.onValue = onValue;
-        window.signInWithGoogle = async () => {
-            try {
-                const result = await signInWithPopup(auth, provider);
-                console.log("Googleアカウントでログイン成功:", result.user);
-            } catch (error) {
-                console.error("Googleログインエラー:", error.message);
-            }
-        };
+
 
         $('#submitPost').click(async function () {
             console.log('投稿ボタンがクリックされました');
@@ -142,9 +156,8 @@
                 var impression = $('#impressionPost').val();
                 var imageFile = $('#imagePost').prop('files')[0]; // 画像ファイルを取得
 
-
                 // Firebaseに新しい投稿の参照を作成
-                var newPostRef = window.push(window.ref(window.db, 'posts'));
+                var newPostRef = window.push(window.ref(window.db, 'users/' + user.uid + '/posts'));
 
                 var imageUrl = ''; // 画像URLを初期化
 
@@ -159,7 +172,7 @@
 
                 // 画像があればFirebase Storageにアップロード
                 if (imageFile) {
-                    var imageRef = storageRef(getStorage(), 'images/' + newPostRef.key + '/' + imageFile.name);
+                    var imageRef = storageRef(getStorage(), 'images/' + user.uid + '/' + newPostRef.key + '/' + imageFile.name);
                     await uploadBytes(imageRef, imageFile);
                     imageUrl = await getDownloadURL(imageRef);
                 }
@@ -209,9 +222,6 @@
             }
         });
 
-
-
-
         let postAutocomplete;
         let map;
 
@@ -256,6 +266,8 @@
             $("#storeNamePost").val(place.name);
         }
 
+        let markers = [];
+
 
         function initMap() {
             if (navigator.geolocation) {
@@ -275,6 +287,63 @@
                                 stylers: [{ visibility: "off" }]
                             }
                         ]
+                    });
+
+                    // Firebaseからデータを読み込み、マップにマーカーを表示
+                    const db = getDatabase();
+                    const postsRef = ref(db, 'posts');
+                    onValue(postsRef, (snapshot) => {
+                        snapshot.forEach((childSnapshot) => {
+                            const postData = childSnapshot.val();
+                            const marker = new google.maps.Marker({
+                                position: { lat: postData.latitude, lng: postData.longitude },
+                                map: map,
+                                genre: postData.genre,
+                                scene: postData.scene,
+                                budget: postData.budget
+                            });
+
+                            // マーカーを配列に追加
+                            markers.push(marker);
+
+                            //infoWindowの開閉
+                            const infoWindow = new google.maps.InfoWindow();
+                            let isHovering = false;
+
+                            marker.addListener('mouseover', function () {
+                                // 画像がある場合はimgタグを含める
+                                const imageHtml = postData.imageUrl ? `<img src="${postData.imageUrl}" alt="${postData.storeName}" style="width:100px; height:auto;"><br>` : '';
+                                infoWindow.setContent(`<div><strong>店名: <a href="${postData.url}" target="_blank">${postData.storeName}</strong></a><br>住所: ${postData.address}<br><br>ジャンル: ${postData.genre}<br>利用シーン: ${postData.scene}<br>予算: ${postData.budget}<br><br><em>コメント: ${postData.impression || '情報なし'}</em><br>${imageHtml}<br>投稿者: ${postData.userName || '匿名'}</div>`);
+                                infoWindow.open(map, marker);
+                            });
+
+                            google.maps.event.addListener(infoWindow, 'domready', function () {
+                                // InfoWindowのDOM要素にマウスイベントを設定
+                                const iwOuter = $('.gm-style-iw').last();
+                                const iwBackground = iwOuter.prev();
+                                iwBackground.children(':nth-child(2)').css({ 'display': 'none' });
+                                iwBackground.children(':nth-child(4)').css({ 'display': 'none' });
+
+                                iwOuter.parent().parent().hover(function () {
+                                    isHovering = true;
+                                }, function () {
+                                    isHovering = false;
+                                    setTimeout(() => {
+                                        if (!isHovering) {
+                                            infoWindow.close();
+                                        }
+                                    }, 500); // 0.5秒後に閉じる
+                                });
+                            });
+
+                            marker.addListener('mouseout', function () {
+                                setTimeout(() => {
+                                    if (!isHovering) {
+                                        infoWindow.close();
+                                    }
+                                }, 500); // 0.5秒後に閉じる
+                            });
+                        });
                     });
 
                     // 青い丸で現在地を表示
@@ -297,58 +366,7 @@
                 window.handleLocationError(false, map, map.getCenter());
             }
 
-            // Firebaseからデータを読み込み、マップにマーカーを表示
-            const db = getDatabase();
-            const postsRef = ref(db, 'posts');
-            onValue(postsRef, (snapshot) => {
-                snapshot.forEach((childSnapshot) => {
-                    const postData = childSnapshot.val();
-                    const marker = new google.maps.Marker({
-                        position: { lat: postData.latitude, lng: postData.longitude },
-                        map: map
-                    });
 
-                    
-
-                    //infoWindowの開閉
-                    const infoWindow = new google.maps.InfoWindow();
-                    let isHovering = false;
-
-                    marker.addListener('mouseover', function () {
-                        // 画像がある場合はimgタグを含める
-                        const imageHtml = postData.imageUrl ? `<img src="${postData.imageUrl}" alt="${postData.storeName}" style="width:100px; height:auto;"><br>` : '';
-                        infoWindow.setContent(`<div><strong>店名: <a href="${postData.url}" target="_blank">${postData.storeName}</strong></a><br>住所: ${postData.address}<br><br>ジャンル: ${postData.genre}<br>利用シーン: ${postData.scene}<br>予算: ${postData.budget}<br><br><em>コメント: ${postData.impression || '情報なし'}</em><br>${imageHtml}<br>投稿者: ${postData.userName || '匿名'}</div>`);
-                        infoWindow.open(map, marker);
-                    });
-
-                    google.maps.event.addListener(infoWindow, 'domready', function () {
-                        // InfoWindowのDOM要素にマウスイベントを設定
-                        const iwOuter = $('.gm-style-iw').last();
-                        const iwBackground = iwOuter.prev();
-                        iwBackground.children(':nth-child(2)').css({ 'display': 'none' });
-                        iwBackground.children(':nth-child(4)').css({ 'display': 'none' });
-
-                        iwOuter.parent().parent().hover(function () {
-                            isHovering = true;
-                        }, function () {
-                            isHovering = false;
-                            setTimeout(() => {
-                                if (!isHovering) {
-                                    infoWindow.close();
-                                }
-                            }, 500); // 0.5秒後に閉じる
-                        });
-                    });
-
-                    marker.addListener('mouseout', function () {
-                        setTimeout(() => {
-                            if (!isHovering) {
-                                infoWindow.close();
-                            }
-                        }, 500); // 0.5秒後に閉じる
-                    });
-                });
-            });
         }
 
         // <!-- 地図検索の自動補完-->
@@ -406,6 +424,53 @@
             });
         });
 
+        // ジャンルフィルターの変更を監視
+        document.getElementById('genreFilter').addEventListener('change', function () {
+            filterMarkersByGenre(this.value);
+        });
+
+        // 利用シーンフィルターの変更を監視
+        document.getElementById('sceneFilter').addEventListener('change', function () {
+            filterMarkersByScene(this.value);
+        });
+
+        // 予算フィルターの変更を監視
+        document.getElementById('budgetFilter').addEventListener('change', function () {
+            filterMarkersByBudget(this.value);
+        });
+
+        // ジャンルに基づいてマーカーをフィルタリングする関数
+        function filterMarkersByGenre(genre) {
+            markers.forEach(marker => {
+                if (genre === "" || marker.genre === genre) {
+                    marker.setMap(map);  // ジャンルが一致する場合はマーカーを表示
+                } else {
+                    marker.setMap(null);  // 一致しない場合はマーカーを非表示
+                }
+            });
+        }
+
+        // 利用シーンに基づいてマーカーをフィルタリングする関数
+        function filterMarkersByScene(scene) {
+            markers.forEach(marker => {
+                if (scene === "" || marker.scene === scene) {
+                    marker.setMap(map);  // 利用シーンが一致する場合はマーカーを表示
+                } else {
+                    marker.setMap(null);  // 一致しない場合はマーカーを非表示
+                }
+            });
+        }
+
+        // 予算に基づいてマーカーをフィルタリングする関数
+        function filterMarkersByBudget(budget) {
+            markers.forEach(marker => {
+                if (budget === "" || marker.budget === budget) {
+                    marker.setMap(map);  // 予算が一致する場合はマーカーを表示
+                } else {
+                    marker.setMap(null);  // 一致しない場合はマーカーを非表示
+                }
+            });
+        }
 
     </script>
 
