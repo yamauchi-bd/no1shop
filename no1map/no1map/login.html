@@ -75,25 +75,12 @@
                 const userId = result.user.uid;
                 const userRef = ref(db, 'users/' + userId);
 
-                onValue(userRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        console.log("プロフィールが既に存在します。");
-                        $('#loginContainer').show();
-                        $('#profileContainer').hide();
-                        window.location.href = 'map.html'; // 登録済みの場合、map.htmlに遷移
-                    } else {
-                        console.log("プロフィールが存在しません。プロフィール登録画面を表示します。");
-                        $('#loginContainer').hide();
-                        $('#profileContainer').fadeIn();
-                    }
-                }, {
-                    onlyOnce: true
-                });
-
             } catch (error) {
                 console.error("Googleロインエラー:", error.message);
             }
         };
+
+        
 
         window.saveProfile = async () => {
             const nickname = document.getElementById('nickname').value;
@@ -120,14 +107,27 @@
         };
 
         onAuthStateChanged(auth, user => {
-            if (user) {
-                // ユーザーがログインしている場合、map.htmlにリダイレクト
-                window.location.href = 'map.html';
-            } else {
-                // ユーザーがログインしていない場合、ログインフォームを表示
-                $('#loginContainer').show();
-            }
-        });
+        if (user) {
+            // ユーザーがログインしている場合、ユーザーのデータを確認
+            const userRef = ref(db, 'users/' + user.uid);
+            onValue(userRef, (snapshot) => {
+                const userData = snapshot.val();
+                if (userData && userData.nickname && userData.favoriteGenre && userData.profilePictureUrl) {
+                    // ニックネーム、好きなジャンル、プロフィール画像がすべて登録されている場合
+                    window.location.href = 'map.html';
+                } else {
+                    // 登録されていない情報がある場合、プロフィール登録フォームを表示
+                    $('#loginContainer').hide();
+                    $('#profileContainer').show();
+                }
+            }, {
+                onlyOnce: true
+            });
+        } else {
+            // ユーザーがログインしていない場合、ログインフォームを表示
+            $('#loginContainer').show();
+        }
+    });
     </script>
 
     <script>
