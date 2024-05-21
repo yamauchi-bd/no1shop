@@ -21,21 +21,44 @@
     <div id="mapFilter">
         <select name="" id="genreFilter">
             <option value="">ジャンル</option>
+            <option value="焼肉">焼肉</option>
+            <option value="焼き鳥">焼き鳥</option>
+            <option value="寿司">寿司</option>
+            <option value="居酒屋">居酒屋</option>
+            <option value="お好み焼き･もんじゃ">お好み焼き･もんじゃ</option>
+            <option value="ラーメン">ラーメン</option>
+            <option value="カレー">カレー</option>
             <option value="フレンチ">フレンチ</option>
             <option value="イタリアン">イタリアン</option>
             <option value="日本料理">日本料理</option>
+            <option value="中華料理">中華料理</option>
+            <option value="韓国料理">韓国料理</option>
+            <option value="アジア料理">アジア料理</option>
+            <option value="エスニック料理">エスニック料理</option>
+            <option value="創作料理">創作料理</option>
+            <option value="ビストロ">ビストロ</option>
+            <option value="スイーツ">スイーツ</option>
+            <option value="カフェ･喫茶店">カフェ･喫茶店</option>
+            <option value="ビアバー">ビアバー</option>
+            <option value="ワインバー">ワインバー</option>
+            <option value="日本酒バー">日本酒バー</option>
         </select>
         <select name="" id="sceneFilter">
             <option value="">利用シーン</option>
+            <option value="カジュアル">カジュアル</option>
             <option value="デート">デート</option>
-            <option value="会食">会食</option>
-            <option value="日常">日常</option>
+            <option value="記念日">記念日</option>
+            <option value="接待･会食">接待･会食</option>
+            <option value="歓送迎会">歓送迎会</option>
+            <option value="忘年会･新年会">忘年会･新年会</option>
         </select>
         <select name="" id="budgetFilter">
             <option value="">予算</option>
-            <option value="〜5000円">〜5000円</option>
+            <option value="〜1000円">〜1000円</option>
+            <option value="1000円〜5000円">1000円〜5000円</option>
             <option value="5000円〜10000円">5000円〜10000円</option>
-            <option value="10000円〜">10000円〜</option>
+            <option value="10000円〜30000円">10000円〜30000円</option>
+            <option value="30000円〜">30000円〜</option>
         </select>
     </div>
 
@@ -61,22 +84,45 @@
             <input type="text" id="addressPost" placeholder="住所" required>
             <input type="text" id="urlPost" placeholder="URL">
             <select name="" id="genrePost" required>
-                <option value="" selected>ジャンル</option>
+                <option value="">ジャンル</option>
+                <option value="焼肉">焼肉</option>
+                <option value="焼き鳥">焼き鳥</option>
+                <option value="寿司">寿司</option>
+                <option value="居酒屋">居酒屋</option>
+                <option value="お好み焼き･もんじゃ">お好み焼き･もんじゃ</option>
+                <option value="ラーメン">ラーメン</option>
+                <option value="カレー">カレー</option>
                 <option value="フレンチ">フレンチ</option>
                 <option value="イタリアン">イタリアン</option>
-                <option value="日料理">日本料理</option>
+                <option value="日本料理">日本料理</option>
+                <option value="中華料理">中華料理</option>
+                <option value="韓国料理">韓国料理</option>
+                <option value="アジア料理">アジア料理</option>
+                <option value="エスニック料理">エスニック料理</option>
+                <option value="創作料理">創作料理</option>
+                <option value="ビストロ">ビストロ</option>
+                <option value="スイーツ">スイーツ</option>
+                <option value="カフェ･喫茶店">カフェ･喫茶店</option>
+                <option value="ビアバー">ビアバー</option>
+                <option value="ワインバー">ワインバー</option>
+                <option value="日本酒バー">日本酒バー</option>
             </select>
             <select name="" id="scenePost" required>
                 <option value="" selected>利用シーン</option>
+                <option value="カジュアル">カジュアル</option>
                 <option value="デート">デート</option>
-                <option value="会食">会食</option>
-                <option value="日常">日常</option>
+                <option value="記念日">記念日</option>
+                <option value="接待･会食">接待･会食</option>
+                <option value="歓送迎会">歓送迎会</option>
+                <option value="忘年会･新年会">忘年会･新年会</option>
             </select>
             <select name="" id="budgetPost" required>
                 <option value="" selected>予算</option>
-                <option value="〜5000円">〜5000円</option>
+                <option value="〜1000円">〜1000円</option>
+                <option value="1000円〜5000円">1000円〜5000円</option>
                 <option value="5000円〜10000円">5000円〜10000円</option>
-                <option value="10000円〜">10000円〜</option>
+                <option value="10000円〜30000円">10000円〜30000円</option>
+                <option value="30000円〜">30000円〜</option>
             </select>
             <textarea id="impressionPost" placeholder="おすすめポイント"></textarea>
             <!-- 画像アップロードのためのinput要素を追加 -->
@@ -157,22 +203,15 @@
                 var imageFile = $('#imagePost').prop('files')[0]; // 画像ファイルを取得
 
                 // Firebaseに新しい投稿の参照を作成
-                var newPostRef = window.push(window.ref(window.db, 'users/' + user.uid + '/posts'));
+                var newPostRef = window.push(window.ref(window.db, '/posts'));
 
                 var imageUrl = ''; // 画像URLを初期化
 
-                document.getElementById('customFileBtn').addEventListener('click', function () {
-                    document.getElementById('imagePost').click();
-                });
-
-                document.getElementById('imagePost').addEventListener('change', function () {
-                    var fileName = this.files[0] ? this.files[0].name : "選択されていません";
-                    document.getElementById('fileChosen').textContent = fileName;
-                });
+                
 
                 // 画像があればFirebase Storageにアップロード
                 if (imageFile) {
-                    var imageRef = storageRef(getStorage(), 'images/' + user.uid + '/' + newPostRef.key + '/' + imageFile.name);
+                    var imageRef = storageRef(getStorage(), 'images/' + newPostRef.key + '/' + imageFile.name);
                     await uploadBytes(imageRef, imageFile);
                     imageUrl = await getDownloadURL(imageRef);
                 }
@@ -313,7 +352,8 @@
                             marker.addListener('mouseover', function () {
                                 // 画像がある場合はimgタグを含める
                                 const imageHtml = postData.imageUrl ? `<img src="${postData.imageUrl}" alt="${postData.storeName}" style="width:100px; height:auto;"><br>` : '';
-                                infoWindow.setContent(`<div><strong>店名: <a href="${postData.url}" target="_blank">${postData.storeName}</strong></a><br>住所: ${postData.address}<br><br>ジャンル: ${postData.genre}<br>利用シーン: ${postData.scene}<br>予算: ${postData.budget}<br><br><em>コメント: ${postData.impression || '情報なし'}</em><br>${imageHtml}<br>投稿者: ${postData.userName || '匿名'}</div>`);
+                                infoWindow.setContent(`<div><strong>店名: <a href="${postData.url}" target="_blank">${postData.storeName}</strong></a><br>住所: ${postData.address}<br><br>ジャンル: ${postData.genre}<br>利用シーン: ${postData.scene}<br>予算: ${postData.budget}<br><br><em>おすすめポイント:<br> ${postData.impression || '情報なし'}</em><br>${imageHtml}<br>投稿者: ${postData.userName || '匿名'}</div>`);
+                                infoWindow.setOptions({pixelOffset: new google.maps.Size(160, 100)});
                                 infoWindow.open(map, marker);
                             });
 
@@ -422,6 +462,15 @@
             mapFilterSelects.forEach(function (select) {
                 updateSelectColor(select, 'gray', 'black'); // マップフィルター用の色設定
             });
+
+            document.getElementById('customFileBtn').addEventListener('click', function () {
+                    document.getElementById('imagePost').click();
+                });
+
+                document.getElementById('imagePost').addEventListener('change', function () {
+                    var fileName = this.files[0] ? this.files[0].name : "選択されていません";
+                    document.getElementById('fileChosen').textContent = fileName;
+                });
         });
 
         // ジャンルフィルターの変更を監視

@@ -41,12 +41,13 @@ body::before {
 }
 
 #loginContainer p {
-    font-size: 30px;
+    font-size: 25px;
     margin-bottom: 10px;
 }
 
 #loginContainer h1 {
-    font-size: 50px;
+    font-size: 42px;
+    font-style: italic;
     margin-top: 0;
 }
 
