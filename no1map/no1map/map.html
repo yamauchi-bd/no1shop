@@ -142,10 +142,20 @@
                 var impression = $('#impressionPost').val();
                 var imageFile = $('#imagePost').prop('files')[0]; // 画像ファイルを取得
 
+
                 // Firebaseに新しい投稿の参照を作成
                 var newPostRef = window.push(window.ref(window.db, 'posts'));
 
                 var imageUrl = ''; // 画像URLを初期化
+
+                document.getElementById('customFileBtn').addEventListener('click', function () {
+                    document.getElementById('imagePost').click();
+                });
+
+                document.getElementById('imagePost').addEventListener('change', function () {
+                    var fileName = this.files[0] ? this.files[0].name : "選択されていません";
+                    document.getElementById('fileChosen').textContent = fileName;
+                });
 
                 // 画像があればFirebase Storageにアップロード
                 if (imageFile) {
@@ -200,14 +210,7 @@
         });
 
 
-        document.getElementById('customFileBtn').addEventListener('click', function () {
-            document.getElementById('imagePost').click();
-        });
 
-        document.getElementById('imagePost').addEventListener('change', function () {
-            var fileName = this.files[0] ? this.files[0].name : "選択されていません";
-            document.getElementById('fileChosen').textContent = fileName;
-        });
 
         let postAutocomplete;
         let map;
@@ -226,10 +229,10 @@
             initPostAutocomplete();
         };
 
-        // initPostAutocomplete
+        // 店舗名の自動補完と住所・URLの自動入力
         function initPostAutocomplete() {
             const inputElement = document.getElementById('storeNamePost');
-            
+
             postAutocomplete = new google.maps.places.Autocomplete(inputElement, { types: ['establishment'] });
             postAutocomplete.setFields(['place_id', 'name', 'formatted_address', 'website']);
             postAutocomplete.addListener('place_changed', fillInAddress);
@@ -305,6 +308,8 @@
                         map: map
                     });
 
+                    
+
                     //infoWindowの開閉
                     const infoWindow = new google.maps.InfoWindow();
                     let isHovering = false;
@@ -312,7 +317,7 @@
                     marker.addListener('mouseover', function () {
                         // 画像がある場合はimgタグを含める
                         const imageHtml = postData.imageUrl ? `<img src="${postData.imageUrl}" alt="${postData.storeName}" style="width:100px; height:auto;"><br>` : '';
-                        infoWindow.setContent(`<div><strong><a href="${postData.url}" target="_blank">店名: ${postData.storeName}</strong></a><br>住所: ${postData.address}<br><br>ジャンル: ${postData.genre}<br>利用シーン: ${postData.scene}<br>予算: ${postData.budget}<br><br><em>コメント: ${postData.impression || '情報なし'}</em><br>${imageHtml}<br>投稿者: ${postData.userName || '匿名'}</div>`);
+                        infoWindow.setContent(`<div><strong>店名: <a href="${postData.url}" target="_blank">${postData.storeName}</strong></a><br>住所: ${postData.address}<br><br>ジャンル: ${postData.genre}<br>利用シーン: ${postData.scene}<br>予算: ${postData.budget}<br><br><em>コメント: ${postData.impression || '情報なし'}</em><br>${imageHtml}<br>投稿者: ${postData.userName || '匿名'}</div>`);
                         infoWindow.open(map, marker);
                     });
 
