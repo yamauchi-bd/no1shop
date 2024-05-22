@@ -12,6 +12,7 @@
 
 <body>
     <div id="map"></div>
+    <button id="returnToCurrentLocation"><i class="fa-solid fa-crosshairs fa-2x"></i></button>
 
     <div id="searchArea">
         <input type="text" id="mapSearchBar" placeholder="地図を移動">
@@ -63,7 +64,7 @@
     </div>
 
     <div class="footer">
-        <button id="myPage">
+        <button id="myPage" onclick="window.location.href='mypage.html';">
             <i class="far fa-user-circle fa-2x"></i>
             マイページ
         </button>
@@ -71,7 +72,7 @@
             <i class="far fa-plus-square fa-2x"></i>
             投稿
         </button>
-        <button id="find">
+        <button id="find" onclick="window.location.href='find.html';">
             <i class="fa-brands fa-instagram fa-2x"></i>
             発見
         </button>
@@ -176,6 +177,7 @@
         // 持続性の設定をlocalに変更
         setPersistence(auth, browserLocalPersistence)
             .then(function () {
+                
                 console.log("持続性の設定が成功しました");
             })
             .catch(function (error) {
@@ -352,7 +354,7 @@
                             marker.addListener('mouseover', function () {
                                 // 画像がある場合はimgタグを含める
                                 const imageHtml = postData.imageUrl ? `<img src="${postData.imageUrl}" alt="${postData.storeName}" style="width:100px; height:auto;"><br>` : '';
-                                infoWindow.setContent(`<div><strong>店名: <a href="${postData.url}" target="_blank">${postData.storeName}</strong></a><br>住所: ${postData.address}<br><br>ジャンル: ${postData.genre}<br>利用シーン: ${postData.scene}<br>予算: ${postData.budget}<br><br><em>おすすめポイント:<br> ${postData.impression || '情報なし'}</em><br>${imageHtml}<br>投稿者: ${postData.userName || '匿名'}</div>`);
+                                infoWindow.setContent(`<div><strong>店名: <a href="${postData.url}" target="_blank">${postData.storeName}</strong></a><br>住所: ${postData.address}<br><br>ジャンル: ${postData.genre}<br>利用シーン: ${postData.scene}<br>予算: ${postData.budget}<br><br><em>おすすめポイント:<br> ${postData.impression || '情報なし'}</em><br>${imageHtml}<br>投稿者:<a href="mypage.html">やまぴー</a></div>`);
                                 infoWindow.setOptions({pixelOffset: new google.maps.Size(160, 100)});
                                 infoWindow.open(map, marker);
                             });
@@ -520,6 +522,24 @@
                 }
             });
         }
+
+        // 現在地に戻るボタンの機能を追加
+        document.getElementById('returnToCurrentLocation').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    map.setCenter(pos);
+                }, function() {
+                    handleLocationError(true, map, map.getCenter());
+                });
+            } else {
+                // ブラウザがGeolocationをサポートしていない場合
+                handleLocationError(false, map, map.getCenter());
+            }
+        });
 
     </script>
 

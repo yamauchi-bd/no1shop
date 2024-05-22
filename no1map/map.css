@@ -4,6 +4,19 @@
     width: 100%; /* 幅を100%に設定 */
 }
 
+#returnToCurrentLocation {
+    position: absolute;
+    bottom: 180px;
+    right: 20px;
+    z-index: 1000;
+    padding: 6.5px 6.5px;
+    background-color: white;
+    border: none;
+    border-radius: 3px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    cursor: pointer;
+}
+
 /* 検索バーのスタイル */
 #searchArea {
     position: absolute;
@@ -67,9 +80,9 @@
 
 /* フッターのスタイル */
 .footer {
-    position: absolute;
+    position: fixed;
     bottom: 0;
-    width: 100%;
+    width: 98.8%;
     display: flex;
     justify-content: space-around;
     background: white;

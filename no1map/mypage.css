@@ -1,0 +1,250 @@
+body {
+    background-image: url('./restaurant.jpeg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: -1;
+}
+
+#myProfileContainer {
+    background: rgba(255, 255, 255, 0.9);
+    width: 80%;
+    margin: 10px auto;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.profile-header .profile-pic {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    margin-right: 50px;
+}
+
+.profile-header h1 {
+    font-size: 24px;
+    color: #333;
+}
+
+.profile-header p {
+    font-size: 16px;
+    color: #666;
+}
+
+.profile-posts h2 {
+    font-size: 20px;
+    text-align: center;
+    color: #333;
+    margin-top: 50px;
+}
+
+.posts-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.post {
+    width: 300px;
+    height: 300px;
+    margin: 10px;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+}
+
+.post img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.post p {
+    padding: 10px;
+    color: #333;
+    font-size: 14px;
+}
+
+/* フッターのスタイル */
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    background: white;
+    padding: 25px 0;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.footer button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.footer button i {
+    margin-bottom: 5px;
+}
+
+#postDetails {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    color: #333;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#postFormContainer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 10;
+}
+
+#postForm {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 350px;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#postForm input, #postForm textarea, #postForm select {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+#postForm input::placeholder,#postForm textarea::placeholder {
+    color: lightgray;
+}
+
+select option[value=""] {
+    color: lightgray;
+}
+
+#postForm #storeNamePost {
+    margin-top: 5px;
+}
+
+#postForm #closePostForm {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: gray;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+#postForm #closePostForm:hover {
+    background: #d2d0cf;
+}
+
+#postForm #submitPost {
+    background: orange;
+    border: none;
+    width: 50%;
+    border-radius: 20px;
+    padding: 10px 20px;
+    margin: 25px auto;
+    margin-bottom: 10px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s;
+}
+
+#postForm #submitPost:hover {
+    background: #f7893f;
+}
+
+.custom-file-upload {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#customFileBtn {
+    font-size: 16px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 5px;
+    color: rgb(185, 185, 185);
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+#customFileBtn:hover {
+    background-color: #e0e0e0;
+}
+
+#fileChosen {
+    color: rgb(155, 155, 155);
+    font-size: 14px;
+}

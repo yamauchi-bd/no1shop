@@ -31,10 +31,27 @@
             <div class="profile-info">
                 <input type="text" id="nickname" placeholder="ニックネーム      " class="nickname">
                 <select id="favoriteGenre" class="genre">
-                    <option value="">好きなジャンル</option>
+                    <option value="焼肉">焼肉</option>
+                    <option value="焼き鳥">焼き鳥</option>
+                    <option value="寿司">寿司</option>
+                    <option value="居酒屋">居酒屋</option>
+                    <option value="お好み焼き･もんじゃ">お好み焼き･もんじゃ</option>
+                    <option value="ラーメン">ラーメン</option>
+                    <option value="カレー">カレー</option>
                     <option value="フレンチ">フレンチ</option>
                     <option value="イタリアン">イタリアン</option>
                     <option value="日本料理">日本料理</option>
+                    <option value="中華料理">中華料理</option>
+                    <option value="韓国料理">韓国料理</option>
+                    <option value="アジア料理">アジア料理</option>
+                    <option value="エスニック料理">エスニック料理</option>
+                    <option value="創作料理">創作料理</option>
+                    <option value="ビストロ">ビストロ</option>
+                    <option value="スイーツ">スイーツ</option>
+                    <option value="カフェ･喫茶店">カフェ･喫茶店</option>
+                    <option value="ビアバー">ビアバー</option>
+                    <option value="ワインバー">ワインバー</option>
+                    <option value="日本酒バー">日本酒バー</option>
                 </select>
             </div>
         </div>
@@ -77,7 +94,7 @@
         };
 
 
-        // プロフィール保存処理f
+        // プロフィール保存処理
         window.saveProfile = async () => {
             const nickname = document.getElementById('nickname').value;
             const favoriteGenre = document.getElementById('favoriteGenre').value;
@@ -99,7 +116,7 @@
             });
 
             $('#profileContainer').fadeOut();
-            // window.location.href = 'map.html';
+            window.location.href = 'map.html';
         };
 
         console.log(auth);
@@ -111,7 +128,7 @@
                 onValue(userRef, (snapshot) => {
                     const userData = snapshot.val();
                     if (userData && userData.nickname && userData.favoriteGenre && userData.profilePictureUrl) {
-                        // window.location.href = 'map.html';
+                        window.location.href = 'map.html';
                     } else {
                         $('#loginContainer').hide();
                         $('#profileContainer').show();
