@@ -240,6 +240,8 @@
                         };
 
                         await window.set(newPostRef, postData);
+                        // マップのセンターを投稿されたお店の位置に移動
+                        map.setCenter(new google.maps.LatLng(latitude, longitude));
 
                         alert('投稿が成功しました！');
                         // フォームのリセット
