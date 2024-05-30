@@ -1,0 +1,189 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+ }
+
+body {
+    background-image: url('./restaurant.jpeg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+}
+
+#loginContainer {
+    background: rgba(212, 156, 92, 0.5);
+    height: 45%;
+    width: 40%;
+    border-radius: 15px;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#loginContainer p {
+    font-size: 25px;
+    margin-bottom: 10px;
+}
+
+#loginContainer h1 {
+    font-size: 42px;
+    font-style: italic;
+    margin-top: 0;
+}
+
+/* ログインフォームのスタイル */
+.login-form {
+    background: rgba(10, 10, 10, 0.7);
+    padding: 30px;
+    border-radius: 15px;
+    width: 350px; 
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.6);
+}
+
+#loginWithGoogle {
+    background-color: orange;
+    color: white;
+    font-size: 16px;
+    padding: 12px 24px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+#loginWithGoogle:hover {
+    background-color: #357ae8;
+    transform: scale(1.05);
+}
+
+#loginWithGoogle:active {
+    background-color: #2a65c5;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* プロフィール登録のスタイル */
+#profileContainer {
+    background: rgba(212, 156, 92, 0.5);
+    height: 40%;
+    width: 100%;
+    border-radius: 15px;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.6);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#profileContainer h1 {
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+.flex-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-around; 
+}
+
+.profile-pic {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 35px;
+    margin-right: 45px;
+    cursor: pointer;
+}
+
+.profile-pic div {
+    position: absolute;
+    bottom: -35px;
+    width: 100%;
+    text-align: center;
+    color: rgb(200, 200, 200);
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    padding: 2px 0;
+    cursor: pointer;
+}
+
+.profile-pic span {
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 220px;
+}
+
+.profile-info .nickname,
+.profile-info .genre {
+    font-size: 16px;
+    width: 100%;
+    height: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-sizing:border-box;
+    border: none;
+    border-radius: 3px;
+}
+
+input::placeholder {
+    color: lightgray;
+}
+
+select option[value=""] {
+    color: lightgray;
+}
+
+.register-button {
+    background-color: orange;
+    color: white;
+    font-size: 16px;
+    padding: 5px 20px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.register-button:hover {
+    background-color: #357ae8;
+    transform: scale(1.05);
+}
+
+.register-button:active {
+    background-color: #2a65c5;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
