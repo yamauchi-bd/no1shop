@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../login.css">
+    <script src="https://kit.fontawesome.com/17c882a708.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <title>プロフィール登録</title>
+</head>
+
+<body>
+    <form id="profileForm" action="profileWrite.php" method="post" enctype="multipart/form-data">
+        <div id="profileContainer">
+            <h1>プロフィールを登録しよう</h1>
+            <div class="flex-container">
+                <div class="profile-pic" style="background-image: url('path_to_default_profile_picture.jpg');">
+                    <div style="cursor: pointer;">
+                        <span onclick="document.getElementById('profilePictureInput').click();">画像を選ぶ <i
+                                class="fa-solid fa-square-plus"></i></span>
+                    </div>
+                </div>
+                <input type="file" id="profilePictureInput" name="profilePicture" style="display: none;"
+                    onchange="updateProfilePicturePreview(this)">
+               <div class="profile-info">
+                    <input type="text" id="nickname" name="nickname" placeholder="ニックネーム" class="nickname">
+                    <select id="favoriteGenre" name="favoriteGenre" class="genre">
+                        <option value="">好きなお店･料理のジャンル</option>
+                        <option value="焼肉">焼肉</option>
+                        <option value="焼き鳥">焼き鳥</option>
+                        <option value="寿司">寿司</option>
+                        <option value="居酒屋">居酒屋</option>
+                        <option value="お好み焼き･もんじゃ">お好み焼き･もんじゃ</option>
+                        <option value="ラーメン">ラーメン</option>
+                        <option value="カレー">カレー</option>
+                        <option value="フレンチ">フレンチ</option>
+                        <option value="イタリアン">イタリアン</option>
+                        <option value="日本料理">日本料理</option>
+                        <option value="中華料理">中華料理</option>
+                        <option value="韓国料理">韓国料理</option>
+                        <option value="アジア料理">アジア料理</option>
+                        <option value="エスニック料理">エスニック料理</option>
+                        <option value="創作料理">創作料理</option>
+                        <option value="ビストロ">ビストロ</option>
+                        <option value="スイーツ">スイーツ</option>
+                        <option value="カフェ･喫茶店">カフェ･喫茶店</option>
+                        <option value="ビアバー">ビアバー</option>
+                        <option value="ワインバー">ワインバー</option>
+                        <option value="日本酒バー">日本酒バー</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="register-button">登録する</button>
+        </div>
+
+
+        <script>
+            function updateProfilePicturePreview(input) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.querySelector('.profile-pic').style.backgroundImage = 'url(' + e.target.result + ')';
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+        </script>
+    </form>
+
+</body>
+
+</html>
