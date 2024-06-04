@@ -12,6 +12,7 @@
 
 <body>
     <div id="map"></div>
+    <!-- 現在地へ戻るボタン -->
     <button id="returnToCurrentLocation"><i class="fa-solid fa-crosshairs fa-2x"></i></button>
 
     <div id="searchArea">
@@ -64,7 +65,7 @@
     </div>
 
     <div class="footer">
-        <button id="myPage" onclick="window.location.href='mypage.html';">
+        <button id="myPage" onclick="window.location.href='mypage.php';">
             <i class="far fa-user-circle fa-2x"></i>
             マイページ
         </button>
@@ -80,11 +81,11 @@
 
     <!-- 投稿画面 -->
     <div id="postFormContainer" style="display: none;">
-        <div id="postForm">
-            <input type="text" id="storeNamePost" placeholder="店舗名" required>
-            <input type="text" id="addressPost" placeholder="住所" required>
-            <input type="text" id="urlPost" placeholder="URL">
-            <select name="" id="genrePost" required>
+        <form id="postForm" action="postWrite.php" method="post" enctype="multipart/form-data">
+            <input name="storeName" type="text" id="storeNamePost" placeholder="店舗名" required>
+            <input name="address" type="text" id="addressPost" placeholder="住所" required>
+            <input name="url" type="text" id="urlPost" placeholder="URL">
+            <select name="genre" id="genrePost" required>
                 <option value="">ジャンル</option>
                 <option value="焼肉">焼肉</option>
                 <option value="焼き鳥">焼き鳥</option>
@@ -108,7 +109,7 @@
                 <option value="ワインバー">ワインバー</option>
                 <option value="日本酒バー">日本酒バー</option>
             </select>
-            <select name="" id="scenePost" required>
+            <select name="scene" id="scenePost" required>
                 <option value="" selected>利用シーン</option>
                 <option value="カジュアル">カジュアル</option>
                 <option value="デート">デート</option>
@@ -117,7 +118,7 @@
                 <option value="歓送迎会">歓送迎会</option>
                 <option value="忘年会･新年会">忘年会･新年会</option>
             </select>
-            <select name="" id="budgetPost" required>
+            <select name="budget" id="budgetPost" required>
                 <option value="" selected>予算</option>
                 <option value="〜1000円">〜1000円</option>
                 <option value="1000円〜5000円">1000円〜5000円</option>
@@ -125,16 +126,17 @@
                 <option value="10000円〜30000円">10000円〜30000円</option>
                 <option value="30000円〜">30000円〜</option>
             </select>
-            <textarea id="impressionPost" placeholder="おすすめポイント"></textarea>
-            <!-- 画像アップロードのためのinput要素を追加 -->
+            <textarea name="impression" id="impressionPost" placeholder="おすすめポイント"></textarea>
+            
             <div class="custom-file-upload">
-                <input type="file" id="imagePost" accept="image/*" style="display:none;">
-                <button id="customFileBtn">画像を追加　<i class="fa-solid fa-plus"></i></button>
+                <input name="image" type="file" id="imagePost" style="display:none;">
+                <span onclick="document.getElementById('imagePost').click();">画像を追加 <i
+                    class="fa-solid fa-square-plus"></i></span>
                 <span id="fileChosen">選択されていません</span>
             </div>
-            <button id="submitPost">投稿</button>
+            <button type="submit" id="submitPost">投稿</button>
             <button id="closePostForm"><i class="fa-solid fa-xmark"></i></button>
-        </div>
+        </form>
     </div>
 
     <script type="module">
@@ -174,15 +176,6 @@
             }
         });
 
-        // 持続性の設定をlocalに変更
-        setPersistence(auth, browserLocalPersistence)
-            .then(function () {
-                
-                console.log("持続性の設定が成功しました");
-            })
-            .catch(function (error) {
-                console.error("持続性の設定エラー:", error);
-            });
 
         window.db = db;
         window.ref = ref;
@@ -467,9 +460,9 @@
                 updateSelectColor(select, 'gray', 'black'); // マップフィルター用の色設定
             });
 
-            document.getElementById('customFileBtn').addEventListener('click', function () {
-                    document.getElementById('imagePost').click();
-                });
+            // document.getElementById('customFileBtn').addEventListener('click', function () {
+            //     document.getElementById('imagePost').click();
+            // });
 
                 document.getElementById('imagePost').addEventListener('change', function () {
                     var fileName = this.files[0] ? this.files[0].name : "選択されていません";
