@@ -2,8 +2,7 @@
 //1.DB接続します
 try {
     //Password:MAMP='root',XAMPP=''
-    $pdo = new PDO('mysql:dbname=yamauchi-bd_no1map;charset=utf8;host=mysql57.yamauchi-bd.sakura.ne.jp', 'yamauchi-bd', 'Vu5s98Lw');
-    // $pdo = new PDO('mysql:dbname=no1map;charset=utf8;host=localhost', 'root', '');
+    $pdo = new PDO('mysql:dbname=no1map;charset=utf8;host=localhost', 'root', '');
 } catch (PDOException $e) {
     exit('DBConnection Error:' . $e->getMessage());
 }

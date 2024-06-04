@@ -16,8 +16,7 @@ $storeImagePath = 'storeImage/' . uniqid() . '_' . basename($image['name']); // 
 
 // 2. DB接続
 try {
-  $pdo = new PDO('mysql:dbname=yamauchi-bd_no1map;charset=utf8;host=mysql57.yamauchi-bd.sakura.ne.jp', 'yamauchi-bd', 'Vu5s98Lw');
-  // $pdo = new PDO('mysql:dbname=no1map;charset=utf8;host=localhost','root','');
+  $pdo = new PDO('mysql:dbname=no1map;charset=utf8;host=localhost','root','');
   $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // エラーモードを例外に設定
 } catch (PDOException $e) {
   exit('DB_CONNECT_ERROR:'.$e->getMessage());
