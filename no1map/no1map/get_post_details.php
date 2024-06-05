@@ -1,6 +1,7 @@
 <?php
-// データベース接続
-$pdo = new PDO('mysql:dbname=no1map;charset=utf8;host=localhost', 'root', '');
+
+include_once("funcs.php");
+$pdo = db_conn();
 
 // POSTデータを受け取る
 $postId = $_POST['postId'];

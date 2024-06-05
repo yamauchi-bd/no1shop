@@ -1,4 +1,5 @@
 <?php
+include("funcs.php");
 ini_set('display_errors', 1);
 
 //文字作成

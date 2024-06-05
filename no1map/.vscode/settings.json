@@ -1,3 +1,8 @@
 {
-    "php.validate.executablePath": ""
+    "liveServer.settings.proxy": {
+        "enable": true,                             //   i. enabled
+        "baseUri": "/",                             //  ii. workspace
+        "proxyUri": "http://localhost:80/workspace" // iii. actual address
+    },
+    "liveServer.settings.useWebExt": true,
 }

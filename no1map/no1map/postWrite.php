@@ -1,4 +1,5 @@
 <?php
+include_once("funcs.php");
 // エラー表示を有効にする
 ini_set("display_errors", 1);
 error_reporting(E_ALL);
@@ -16,7 +17,7 @@ $storeImagePath = 'storeImage/' . uniqid() . '_' . basename($image['name']); // 
 
 // 2. DB接続
 try {
-  $pdo = new PDO('mysql:dbname=no1map;charset=utf8;host=localhost','root','');
+  $pdo = db_conn();
   $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // エラーモードを例外に設定
 } catch (PDOException $e) {
   exit('DB_CONNECT_ERROR:'.$e->getMessage());
