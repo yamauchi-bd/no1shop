@@ -1,20 +1,39 @@
 <?php
-
 include_once("funcs.php");
-$pdo = db_conn();
 
-// POSTデータを受け取る
-$postId = $_POST['postId'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $postId = $_POST['postId'];
 
-// データ取得SQLを準備
-$sql = "SELECT * FROM no1_post WHERE id = :id";
-$stmt = $pdo->prepare($sql);
-$stmt->bindValue(':id', $postId, PDO::PARAM_INT);
-$stmt->execute();
+    // DB接続
+    try {
+        $pdo = db_conn();
+    } catch (PDOException $e) {
+        echo json_encode(['error' => 'DBConnection Error: ' . $e->getMessage()]);
+        exit();
+    }
 
-// データを取得
-$postDetails = $stmt->fetch(PDO::FETCH_ASSOC);
+    // 投稿詳細を取得
+    $stmt = $pdo->prepare("
+        SELECT no1_post.storeName, no1_post.address, no1_post.url, no1_post.genre, no1_post.scene, no1_post.budget, no1_post.impression, user_table.nickname 
+        FROM no1_post 
+        JOIN user_table ON no1_post.userID = user_table.loginID 
+        WHERE no1_post.id = :postId
+    ");
+    $stmt->bindValue(':postId', $postId, PDO::PARAM_INT);
+    $status = $stmt->execute();
 
-// JSON形式で出力
-echo json_encode($postDetails);
+    if ($status == false) {
+        $error = $stmt->errorInfo();
+        echo json_encode(['error' => 'ErrorQuery: ' . $error[2]]);
+    } else {
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($result) {
+            // nicknameをエンコード
+            $result['nickname'] = urlencode($result['nickname']);
+            echo json_encode($result);
+        } else {
+            echo json_encode(['error' => 'No data found']);
+        }
+    }
+}
 ?>

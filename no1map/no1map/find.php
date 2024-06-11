@@ -17,70 +17,43 @@ try {
     exit('DBConnection Error:' . $e->getMessage());
 }
 
-// ユーザー情報を取得するSQL
-$userInfoSql = "SELECT nickname, favoriteGenre, profilePicture FROM user_table WHERE loginId = :loginId";
-$userInfoStmt = $pdo->prepare($userInfoSql);
-$userInfoStmt->bindValue(':loginId', $_SESSION['loginId'], PDO::PARAM_STR);
-$userInfoStmt->execute();
-$userInfo = $userInfoStmt->fetch(PDO::FETCH_ASSOC);
-
-if ($userInfo) {
-    $_SESSION['nickname'] = $userInfo['nickname']; // ニックネームをセッションに保存
-    $_SESSION['favoriteGenre'] = $userInfo['favoriteGenre']; // 好きなジャンルをセッションに保存
-    $_SESSION['profilePicture'] = $userInfo['profilePicture']; // プロフィール画像のパスをセッションに保存
-} else {
-    exit('ユーザー情報の取得に失敗しました。');
-}
-
-// ユーザーIDに基づいて自分の投稿のみを取得
-$sql = "SELECT * FROM no1_post WHERE userId = :userId";
-$stmt = $pdo->prepare($sql);
-$stmt->bindValue(':userId', $_SESSION['loginId'], PDO::PARAM_STR);
+// 画像データを取得
+$stmt = $pdo->prepare("
+    SELECT no1_post.id, no1_post.image, user_table.nickname 
+    FROM no1_post 
+    JOIN user_table ON no1_post.userID = user_table.loginID
+");
 $status = $stmt->execute();
 
 if ($status == false) {
     $error = $stmt->errorInfo();
-    exit("SQLError:" . $error[2]);
+    exit("ErrorQuery:" . $error[2]);
+} else {
+    $values = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-
-$values = $stmt->fetchAll(PDO::FETCH_ASSOC); //PDO::FETCH_ASSOC[カラム名のみで取得できるモード]
-$json = json_encode($values, JSON_UNESCAPED_UNICODE);
-
 ?>
 
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>myPage</title>
     <link rel="stylesheet" href="../mypage.css">
     <script src="https://kit.fontawesome.com/17c882a708.js" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Find</title>
 </head>
 
-
 <body>
-    <div id="myProfileContainer">
-        <div class="profile-header">
-        <img class="profile-pic" src="<?php echo $_SESSION['profilePicture']; ?>">
-            <div class="profile-content">
-                <h1>ニックネーム:<?php echo $_SESSION['nickname']; ?></h1>
-                <p>好きなジャンル:<?php echo $_SESSION['favoriteGenre']; ?></p>
-            </div>
-        </div>
-        <div class="profile-posts">
-            <h2>･･･ 投稿 ･･･</h2>
-            <div class="posts-container">
-                <?php foreach ($values as $value) : ?>
-                    <div class="post">
-                        <img src="<?php echo $value['image']; ?>" data-post-id="<?=$value['id']; ?>" alt="投稿画像">
-                        <a href="edit.php?id=<?=$value["id"]?>">【更新】</a>
-                        <a href="delete.php?id=<?=$value["id"]?>" onclick="return confirm('本当に削除しますか？');">【削除】</a>
-                    </div>
-                <?php endforeach; ?>
-            </div>
+    <div class="profile-posts">
+        <h2>･･･ 投稿一覧 ･･･</h2>
+        <div class="posts-container">
+            <?php foreach ($values as $value) : ?>
+                <div class="post">
+                    <img src="<?php echo $value['image']; ?>" alt="投稿画像" data-post-id="<?php echo $value['id']; ?>">
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
 
@@ -182,7 +155,8 @@ $json = json_encode($values, JSON_UNESCAPED_UNICODE);
                             '<p>ジャンル: ' + data.genre + '</p>' +
                             '<p>シーン: ' + data.scene + '</p>' +
                             '<p>予算: ' + data.budget + '</p>' +
-                            '<p>おすすめ: ' + data.impression + '</p>'
+                            '<p>おすすめ: ' + data.impression + '</p>' +
+                            '<p>投稿者: <a href="mypage.php?nickname=' + encodeURIComponent(data.nickname) + '">' + data.nickname + '</a></p>'
                         );
                         $('#postDetails').css({
                             'display': 'block',
@@ -297,10 +271,6 @@ $json = json_encode($values, JSON_UNESCAPED_UNICODE);
             });
         }
     </script>
-
-    
-
-
 </body>
 
 </html>

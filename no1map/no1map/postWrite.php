@@ -1,8 +1,17 @@
 <?php
+session_start(); // セッションを開始
+
 include_once("funcs.php");
 // エラー表示を有効にする
 ini_set("display_errors", 1);
 error_reporting(E_ALL);
+
+// デバッグ用にセッション変数の内容を出力
+var_dump($_SESSION['loginId']);
+
+if (!isset($_SESSION['loginId'])) {
+    exit('ログインが必要です。');
+}
 
 // 1. POSTデータ取得
 $storeName = $_POST['storeName'];
@@ -26,8 +35,9 @@ try {
 // 画像ファイルをアップロードする
 if(move_uploaded_file($image['tmp_name'], $storeImagePath)) {
   // 3. データ登録SQL作成
-  $sql = "INSERT INTO no1_post (storeName, address, url, genre, scene, budget, impression, image, indate) VALUES (:storeName, :address, :url, :genre, :scene, :budget, :impression, :storeImagePath, sysdate())";
+  $sql = "INSERT INTO no1_post (userId, storeName, address, url, genre, scene, budget, impression, image, indate) VALUES (:userId, :storeName, :address, :url, :genre, :scene, :budget, :impression, :storeImagePath, sysdate())";
   $stmt = $pdo->prepare($sql);
+  $stmt->bindValue(':userId', $_SESSION['loginId'], PDO::PARAM_STR);
   $stmt->bindValue(':storeName', $storeName, PDO::PARAM_STR);
   $stmt->bindValue(':address', $address, PDO::PARAM_STR);
   $stmt->bindValue(':url', $url, PDO::PARAM_STR);

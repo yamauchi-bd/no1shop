@@ -51,7 +51,7 @@ $row = $stmt->fetch();
 <div id="postFormContainer">
         <form id="postForm" action="editProcess.php" method="post" enctype="multipart/form-data">
             <input type="hidden" name="id" value="<?=$row['id']?>">
-            <input type="hidden" name="existingImagePath" value="<?=$row['image']?>">
+            <input type="hidden" name="existingImagePath" value="<?=$row['image']?>"> <!-- ここ大事！ -->
             <input name="storeName" type="text" id="storeNamePost" value="<?=$row["storeName"] ?>">
             <input name="address" type="text" id="addressPost" value="<?=$row["address"] ?>">
             <input name="url" type="text" id="urlPost" value="<?=$row["url"] ?>">
